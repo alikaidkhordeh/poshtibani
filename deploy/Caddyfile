@@ -1,0 +1,18 @@
+# Caddy in front of the chat (direct mode only): HTTPS on port 443 only. Port 80 is left to whatever
+# else runs on the server; the free certificate comes through the TLS-ALPN challenge, which needs only
+# port 443. The default "tunnel" mode does not use this file.
+{
+	auto_https disable_redirects
+	servers {
+		protocols h1 h2
+	}
+}
+
+{$CHAT_HOST} {
+	tls {
+		issuer acme {
+			disable_http_challenge
+		}
+	}
+	reverse_proxy chat:3000
+}

@@ -1,0 +1,852 @@
+<title>طرح‌های چت ننه پت</title>
+<script>document.documentElement.lang = 'fa'; document.documentElement.dir = 'rtl';</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800&family=Noto+Nastaliq+Urdu:wght@500;700&family=Noto+Kufi+Arabic:wght@300;500&display=swap">
+<style>
+/* Layout: the choices sit in the right column (RTL start); a live phone sits on the left and stays in view.
+   On phones everything stacks: compact choices, then the phone, then names and test questions. */
+:root {
+  --bg: #f3f0f4;
+  --card: #ffffff;
+  --fg: #251d2b;
+  --muted: #6c6373;
+  --line: #e2dbe5;
+  --accent: #7a2e57;
+  --accent-soft: #f4e5ee;
+  --accent-ink: #ffffff;
+  --f-ui: Vazirmatn, Tahoma, "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141117; --card: #1e1a22; --fg: #eee8f0; --muted: #a69cac; --line: #342c39;
+    --accent: #e294bf; --accent-soft: #3a2432; --accent-ink: #2a0f1d; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141117; --card: #1e1a22; --fg: #eee8f0; --muted: #a69cac; --line: #342c39;
+  --accent: #e294bf; --accent-soft: #3a2432; --accent-ink: #2a0f1d; color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { background: var(--bg); color: var(--fg); }
+body { margin: 0; font-family: var(--f-ui); font-size: 15px; line-height: 1.75; padding-inline: 16px; padding-block: 28px 56px; -webkit-font-smoothing: antialiased; }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.page {
+  max-width: 1120px; margin-inline: auto;
+  display: grid; gap: 22px 40px;
+  grid-template-columns: minmax(0, 1fr) 416px;
+  grid-template-areas: "intro stage" "controls stage" "extras stage";
+  align-items: start;
+}
+.intro { grid-area: intro; }
+.controls { grid-area: controls; }
+.extras { grid-area: extras; }
+.stage { grid-area: stage; grid-row: 1 / span 3; position: sticky; top: 16px; }
+
+.intro h1 { margin: 0 0 6px; font-size: 30px; line-height: 1.35; font-weight: 800; text-wrap: balance; }
+.intro p { margin: 0; color: var(--muted); max-width: 60ch; }
+.intro .kicker { color: var(--accent); font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+
+.group { display: flex; flex-direction: column; gap: 10px; padding-block: 16px; border-top: 1px solid var(--line); }
+.group:first-child { border-top: 0; padding-top: 0; }
+.group-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.group h2 { margin: 0; font-size: 16px; font-weight: 800; }
+.hint { font-size: 13px; color: var(--muted); }
+
+.styles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.style-card {
+  display: flex; gap: 12px; align-items: center; text-align: start;
+  padding: 10px; border-radius: 16px; border: 1.5px solid var(--line); background: var(--card);
+}
+.style-card[aria-checked="true"] { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.style-card .txt { min-width: 0; display: flex; flex-direction: column; }
+.style-card b { font-size: 15px; line-height: 1.5; }
+.style-card b span { color: var(--accent); font-weight: 800; margin-inline-end: 6px; }
+.style-card small { font-size: 12.5px; color: var(--muted); line-height: 1.6; }
+.thumb { flex: none; width: 46px; height: 64px; border-radius: 9px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 0 0 1px rgba(0,0,0,.08); }
+.thumb i { display: block; }
+.thumb .t-head { height: 12px; }
+.thumb .t-body { flex: 1; display: flex; flex-direction: column; gap: 4px; padding: 6px 5px; }
+.thumb .t-b { height: 8px; width: 70%; border-radius: 4px; }
+.thumb .t-u { height: 8px; width: 55%; border-radius: 4px; align-self: flex-start; }
+.thumb .t-b { align-self: flex-end; }
+
+.swatches { display: flex; flex-wrap: wrap; gap: 10px; }
+.swatch { display: flex; align-items: center; gap: 8px; padding: 6px 12px 6px 8px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--card); font-size: 14px; font-weight: 600; }
+.swatch[aria-checked="true"] { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.swatch .dot { width: 24px; height: 24px; border-radius: 50%; box-shadow: 0 0 0 1px rgba(0,0,0,.12) inset; }
+
+.seg { display: inline-flex; padding: 4px; border-radius: 14px; background: var(--card); border: 1px solid var(--line); gap: 4px; align-self: flex-start; }
+.seg button { border: 0; background: transparent; padding: 6px 16px; border-radius: 10px; font-weight: 600; font-size: 14px; color: var(--muted); }
+.seg button[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); }
+
+.pick { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 12px 14px; border-radius: 16px; background: var(--accent-soft); }
+.pick .code { font-weight: 800; font-size: 20px; color: var(--accent); font-variant-numeric: tabular-nums; direction: ltr; }
+.pick .name { font-weight: 600; flex: 1; min-width: 0; }
+.btn { border: 1.5px solid var(--accent); background: transparent; color: var(--accent); border-radius: 12px; padding: 6px 14px; font-weight: 700; font-size: 14px; }
+.btn.solid { background: var(--accent); color: var(--accent-ink); }
+
+.names { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.names label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600; color: var(--muted); }
+.names input { height: 42px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); padding-inline: 12px; font-size: 15px; color: var(--fg); }
+.photo-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.photo-row input[type="file"] { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.tries { display: flex; flex-wrap: wrap; gap: 8px; }
+.try { border: 1px solid var(--line); background: var(--card); border-radius: 12px; padding: 6px 12px; font-size: 14px; text-align: start; }
+.try:hover { border-color: var(--accent); }
+.try em { font-style: normal; font-size: 12px; color: var(--accent); font-weight: 700; margin-inline-start: 6px; }
+.note { margin: 0; font-size: 13.5px; color: var(--muted); max-width: 62ch; }
+
+/* ───────── The phone ───────── */
+.phone {
+  width: 100%; height: clamp(640px, calc(100vh - 32px), 820px);
+  border-radius: 54px; padding: 11px; background: #18151b;
+  box-shadow: 0 0 0 1px #2e2a33, 0 30px 60px -30px rgba(40, 20, 50, .55);
+  position: relative;
+}
+.island { position: absolute; top: 22px; left: 50%; transform: translateX(-50%); width: 108px; height: 30px; border-radius: 20px; background: #000; z-index: 20; }
+
+.app {
+  --f-body: Vazirmatn, Tahoma, sans-serif;
+  position: relative; height: 100%; border-radius: 44px; overflow: hidden;
+  display: flex; flex-direction: column;
+  background: var(--app-bg); color: var(--app-fg);
+  font-family: var(--f-body); font-size: 14.5px; line-height: 1.75;
+}
+.app[data-style="glass"] {
+  background:
+    radial-gradient(circle at 88% 6%, var(--orb1) 0, transparent 46%),
+    radial-gradient(circle at 6% 92%, var(--orb2) 0, transparent 50%),
+    radial-gradient(circle at 30% 45%, var(--orb3) 0, transparent 52%),
+    var(--app-bg);
+}
+.statusbar { flex: none; height: 46px; padding: 14px 30px 0; display: flex; justify-content: space-between; direction: ltr; font-size: 14px; font-weight: 700; background: var(--head-bg); color: var(--head-fg); font-family: var(--f-ui); }
+.statusbar .sb-i { display: flex; gap: 6px; align-items: center; }
+.statusbar .sb-i svg { width: 18px; height: 12px; }
+.app[data-screen="entry"]:not([data-style="tg"]) .statusbar { background: transparent; color: var(--app-fg); }
+.app[data-style="glass"] .statusbar { background: transparent; }
+
+.screen { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.app[data-screen="chat"] .entry, .app[data-screen="entry"] .chat { display: none; }
+
+/* Avatar */
+.avatar { position: relative; flex: none; width: 42px; height: 42px; border-radius: 50%; }
+.avatar svg, .avatar img { width: 100%; height: 100%; border-radius: 50%; display: block; object-fit: cover; }
+.avatar .on { position: absolute; bottom: 1px; inset-inline-start: 1px; width: 11px; height: 11px; border-radius: 50%; background: #3fbf6a; box-shadow: 0 0 0 2px var(--ring); }
+.app[data-style="lux"] .avatar svg, .app[data-style="lux"] .avatar img { box-shadow: 0 0 0 1.5px var(--accent); }
+
+/* Entry screen */
+.entry { overflow-y: auto; background-image: var(--pattern); }
+.entry-in { display: flex; flex-direction: column; gap: 14px; padding: 0 16px 22px; min-height: 100%; }
+.hero { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 18px 8px 4px; }
+.hero .avatar { width: 92px; height: 92px; margin-bottom: 10px; }
+.hero .avatar .on { width: 16px; height: 16px; bottom: 5px; inset-inline-start: 5px; box-shadow: 0 0 0 3px var(--ring); }
+.hello { margin: 0; font-size: 13.5px; color: var(--muted); }
+.persona { margin: 0; font-family: var(--f-display); font-weight: 700; font-size: 28px; line-height: 1.6; color: var(--persona-c, inherit); }
+.role { margin: 0; font-size: 13.5px; color: var(--muted); }
+.entry-card { background: var(--card-bg); color: var(--card-fg); border: 1px solid var(--line); border-radius: 22px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.card-lead { margin: 0 0 2px; font-size: 13.5px; line-height: 1.8; }
+.field { display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 700; }
+.field input { height: 46px; border-radius: 14px; border: 1px solid var(--line); background: var(--input-bg); color: var(--card-fg); padding-inline: 14px; font-size: 15px; font-weight: 500; }
+.field input::placeholder { color: var(--muted); opacity: .8; }
+.field input[dir="ltr"] { text-align: right; }
+.field input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.choice { border: 0; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.choice legend { font-size: 13px; font-weight: 700; padding: 0; margin-bottom: 6px; }
+.opt { position: relative; cursor: pointer; display: block; }
+.opt input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+.opt-body { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 1px; height: 100%; padding: 10px 11px; border-radius: 14px; border: 1.5px solid var(--line); background: var(--input-bg); }
+.opt-body svg { width: 22px; height: 22px; color: var(--accent); margin-bottom: 4px; }
+.opt-body b { font-size: 13.5px; line-height: 1.6; }
+.opt-body small { font-size: 11.5px; color: var(--muted); line-height: 1.6; }
+.opt-body::after { content: ""; position: absolute; top: 10px; inset-inline-end: 10px; width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--line); }
+.opt input:checked + .opt-body { border-color: var(--accent); background: var(--accent-soft); }
+.opt input:checked + .opt-body::after { border-color: var(--accent); background: var(--accent); box-shadow: inset 0 0 0 3px var(--input-bg); }
+.opt input:focus-visible + .opt-body { box-shadow: 0 0 0 3px var(--accent-soft); }
+.err { margin: -4px 0 0; font-size: 12px; color: var(--err); font-weight: 600; }
+.primary { height: 50px; border: 0; border-radius: 15px; background: var(--btn-bg, var(--accent)); color: var(--accent-ink); font-weight: 800; font-size: 15.5px; margin-top: 4px; }
+.privacy { margin: 0; font-size: 11.5px; color: var(--muted); text-align: center; }
+
+/* Chat screen */
+.chat-head { position: relative; z-index: 3; flex: none; display: flex; align-items: center; gap: 10px; padding: 6px 10px 10px; background: var(--head-bg); color: var(--head-fg); }
+.icon-btn { width: 36px; height: 36px; flex: none; border: 0; border-radius: 50%; background: transparent; color: inherit; display: grid; place-items: center; }
+.icon-btn svg { width: 22px; height: 22px; }
+.head-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.head-name { font-family: var(--f-display); font-weight: 700; font-size: 16.5px; line-height: 1.45; }
+.head-status { font-size: 12px; opacity: .82; line-height: 1.4; }
+.msgs { flex: 1; min-height: 0; overflow-y: auto; padding: 14px 12px 10px; display: flex; flex-direction: column; gap: 7px; background-image: var(--pattern); }
+.day { align-self: center; font-size: 11.5px; padding: 1px 12px; border-radius: 999px; background: var(--chip-bg); color: var(--muted); margin-bottom: 4px; }
+.msg { max-width: 84%; padding: 8px 12px 5px; border-radius: var(--r-bubble); box-shadow: var(--bubble-shadow, none); }
+.msg.user { align-self: flex-start; background: var(--user-bg); color: var(--user-fg); border-start-start-radius: 5px; }
+.msg.bot { align-self: flex-end; background: var(--bot-bg); color: var(--bot-fg); border: 1px solid var(--bot-border, transparent); border-start-end-radius: 5px; }
+.msg p { margin: 0; white-space: pre-line; overflow-wrap: anywhere; }
+.msg.fresh { animation: pop .22s ease-out; }
+@keyframes pop { from { transform: translateY(6px); opacity: .2; } to { transform: none; opacity: 1; } }
+.meta { display: flex; justify-content: flex-end; align-items: center; gap: 3px; font-size: 10.5px; color: var(--muted); margin-top: 2px; line-height: 1.4; }
+.msg.user .meta { color: var(--user-meta); }
+.meta svg { width: 15px; height: 15px; }
+.src { display: inline-flex; align-items: center; gap: 5px; margin-top: 6px; padding: 1px 9px 1px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-size: 11px; font-weight: 700; }
+.src svg { width: 12px; height: 12px; }
+.contacts { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 9px; }
+.contact { display: flex; align-items: center; gap: 7px; padding: 7px 9px; border-radius: 12px; border: 1px solid var(--line); background: var(--contact-bg, var(--card-bg)); color: var(--bot-fg); font-size: 12.5px; font-weight: 700; text-align: start; }
+.contact svg { width: 18px; height: 18px; color: var(--accent); flex: none; }
+.typing { align-self: flex-end; display: flex; gap: 4px; padding: 12px 14px; border-radius: var(--r-bubble); border-start-end-radius: 5px; background: var(--bot-bg); border: 1px solid var(--bot-border, transparent); }
+.typing i { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); animation: blink 1.1s infinite ease-in-out; }
+.typing i:nth-child(2) { animation-delay: .15s; }
+.typing i:nth-child(3) { animation-delay: .3s; }
+@keyframes blink { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
+.chips { flex: none; display: flex; gap: 6px; overflow-x: auto; padding: 8px 12px 6px; scrollbar-width: none; }
+.chips::-webkit-scrollbar { display: none; }
+.chip { flex: none; border: 1px solid var(--chip-border, var(--line)); background: var(--chip-bg); color: var(--chip-fg, var(--accent)); border-radius: 999px; padding: 5px 13px; font-size: 12.5px; font-weight: 700; white-space: nowrap; }
+.composer { flex: none; display: flex; gap: 8px; align-items: center; padding: 8px 10px 16px; background: var(--composer-bg); border-top: 1px solid var(--line); }
+.composer input { flex: 1; min-width: 0; height: 44px; border-radius: 22px; border: 1px solid var(--line); background: var(--input-bg); color: var(--card-fg); padding-inline: 16px; font-size: 14.5px; }
+.composer input::placeholder { color: var(--muted); }
+.composer input:focus { outline: none; border-color: var(--accent); }
+.send { width: 44px; height: 44px; flex: none; border: 0; border-radius: 50%; background: var(--btn-bg, var(--accent)); color: var(--accent-ink); display: grid; place-items: center; }
+.send svg { width: 21px; height: 21px; transform: scaleX(-1); }
+
+.sheet { position: absolute; inset: 0; z-index: 10; background: rgba(10, 6, 12, .42); display: flex; align-items: flex-end; }
+.sheet-card { width: 100%; background: var(--sheet-bg); color: var(--card-fg); border-radius: 26px 26px 0 0; padding: 18px 16px 26px; display: flex; flex-direction: column; gap: 10px; }
+.sheet-card h4 { margin: 0; font-size: 16px; font-family: var(--f-display); }
+.sheet-card p { margin: 0; font-size: 12.5px; color: var(--muted); }
+.sheet .contacts { margin-top: 2px; }
+.sheet .contact { padding: 11px 12px; font-size: 13.5px; color: var(--card-fg); }
+.toast { position: absolute; z-index: 12; bottom: 92px; left: 50%; transform: translateX(-50%); width: max-content; max-width: 86%; background: rgba(20, 16, 22, .9); color: #fff; font-size: 12.5px; padding: 8px 14px; border-radius: 14px; text-align: center; line-height: 1.6; }
+
+/* ── Style A · messenger ── */
+.app[data-style="tg"] { --r-bubble: 15px; --bubble-shadow: 0 1px 1.5px rgba(16, 35, 60, .14); }
+.app[data-style="tg"] .hero { margin-inline: -16px; padding: 10px 16px 34px; background: var(--head-bg); color: var(--head-fg); }
+.app[data-style="tg"] .hero .hello, .app[data-style="tg"] .hero .role { color: inherit; opacity: .85; }
+.app[data-style="tg"] .entry-card { margin-top: -30px; box-shadow: 0 6px 18px -10px rgba(16, 35, 60, .4); }
+.app[data-style="tg"] .persona { font-size: 24px; font-weight: 800; }
+
+/* ── Style B · grandma ── */
+.app[data-style="nana"] { --r-bubble: 18px; }
+.app[data-style="nana"] .chat-head { padding-bottom: 12px; }
+.app[data-style="nana"] .chat-head::after {
+  content: ""; position: absolute; inset-inline: 0; bottom: -7px; height: 8px;
+  background: radial-gradient(circle at 50% 0, var(--head-bg) 5px, transparent 5.6px) 0 0 / 12px 8px repeat-x;
+}
+.app[data-style="nana"] .head-name { font-size: 17px; line-height: 1.9; margin-top: -10px; }
+.app[data-style="nana"] .head-status { margin-top: -1px; }
+.app[data-style="nana"] .msgs { padding-top: 20px; }
+.app[data-style="nana"] .msg.bot, .app[data-style="nana"] .entry-card {
+  outline: 1.4px dashed color-mix(in srgb, var(--accent) 55%, transparent); outline-offset: -6px;
+}
+.app[data-style="nana"] .msg.bot { padding: 11px 15px 7px; }
+.app[data-style="nana"] .entry-card { padding: 20px; }
+.app[data-style="nana"] .persona { font-size: 30px; line-height: 2.1; margin-block: -10px 4px; }
+.app[data-style="nana"] .hero .avatar svg, .app[data-style="nana"] .hero .avatar img { box-shadow: 0 0 0 4px var(--app-bg), 0 0 0 6px var(--accent); }
+.app[data-style="nana"] .sheet-card h4 { font-size: 19px; line-height: 2; margin-block: -8px -4px; }
+
+/* ── Style C · luxury ── */
+.app[data-style="lux"] { --r-bubble: 18px; }
+.app[data-style="lux"] .chat-head { border-bottom: 1px solid var(--line); }
+.app[data-style="lux"] .head-name { color: var(--accent); font-weight: 500; font-size: 18px; }
+.app[data-style="lux"] .persona { font-weight: 300; font-size: 32px; }
+.app[data-style="lux"] .hero::after { content: ""; width: 64px; height: 1px; margin-top: 10px; background: linear-gradient(90deg, transparent, var(--accent), transparent); }
+.app[data-style="lux"] .primary, .app[data-style="lux"] .send { box-shadow: 0 8px 20px -10px var(--accent); }
+
+/* ── Style D · glass ── */
+.app[data-style="glass"] { --r-bubble: 20px; }
+.app[data-style="glass"] .chat-head { -webkit-backdrop-filter: blur(18px) saturate(150%); backdrop-filter: blur(18px) saturate(150%); border-bottom: 1px solid var(--line); }
+.app[data-style="glass"] .msg.bot, .app[data-style="glass"] .typing, .app[data-style="glass"] .entry-card, .app[data-style="glass"] .composer, .app[data-style="glass"] .chip, .app[data-style="glass"] .day {
+  -webkit-backdrop-filter: blur(14px) saturate(150%); backdrop-filter: blur(14px) saturate(150%);
+}
+.app[data-style="glass"] .msg.bot { box-shadow: 0 10px 24px -18px rgba(60, 22, 58, .45); }
+.app[data-style="glass"] .persona { font-weight: 800; font-size: 26px; }
+.app[data-style="glass"] .entry-card { box-shadow: 0 20px 40px -26px rgba(60, 22, 58, .45); }
+
+@media (max-width: 900px) {
+  .page { grid-template-columns: minmax(0, 1fr); grid-template-areas: "intro" "controls" "stage" "extras"; }
+  .stage { grid-row: auto; position: static; }
+  .phone { max-width: 430px; margin-inline: auto; height: min(780px, calc(100dvh - 24px)); min-height: 600px; padding: 0; border-radius: 26px; background: none; box-shadow: 0 0 0 1px var(--line), 0 24px 50px -30px rgba(40, 20, 50, .5); }
+  .island, .statusbar { display: none; }
+  .app { border-radius: 26px; }
+  .chat-head { padding-top: 10px; }
+  .hero { padding-top: 26px; }
+  .app[data-style="tg"] .hero { padding-top: 26px; }
+  .styles { display: flex; overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin; }
+  .style-card { flex: 0 0 210px; }
+  .intro h1 { font-size: 25px; }
+}
+@media (max-width: 480px) {
+  .names { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .msg.fresh, .typing i { animation: none; }
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <clipPath id="nana-clip"><circle cx="50" cy="50" r="50"/></clipPath>
+  </defs>
+  <symbol id="nana" viewBox="0 0 100 100">
+    <g clip-path="url(#nana-clip)">
+      <rect width="100" height="100" style="fill:var(--av-bg)"/>
+      <path d="M14 104 Q16 78 50 76 Q84 78 86 104 Z" style="fill:var(--av-cloth)"/>
+      <path d="M38 76 Q50 86 62 76 L60 72 Q50 78 40 72 Z" fill="#fff" opacity=".55"/>
+      <circle cx="50" cy="19" r="11" fill="#cfc9c4"/>
+      <circle cx="50" cy="47" r="27" fill="#ddd8d3"/>
+      <ellipse cx="50" cy="52" rx="20.5" ry="22.5" fill="#f1c7a3"/>
+      <path d="M29.5 47 Q31 29 50 28 Q69 29 70.5 47 Q62 37 50 38 Q38 37 29.5 47 Z" fill="#ebe7e3"/>
+      <circle cx="36" cy="61" r="3.6" fill="#ee918c" opacity=".55"/>
+      <circle cx="64" cy="61" r="3.6" fill="#ee918c" opacity=".55"/>
+      <g fill="none" stroke="#6b4a3a" stroke-width="1.8" stroke-linecap="round">
+        <circle cx="41.5" cy="53" r="6.4" fill="#fff" fill-opacity=".28"/>
+        <circle cx="58.5" cy="53" r="6.4" fill="#fff" fill-opacity=".28"/>
+        <path d="M47.9 53 h4.2"/>
+        <path d="M39 54 Q41.5 51.8 44 54"/>
+        <path d="M56 54 Q58.5 51.8 61 54"/>
+        <path d="M44.5 64.5 Q50 69 55.5 64.5" stroke="#8a4636"/>
+      </g>
+      <circle cx="58" cy="15" r="3.2" style="fill:var(--av-cloth)"/>
+    </g>
+  </symbol>
+  <symbol id="i-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3 3 10.5l7 2.6 2.6 7.4L21 3Z"/><path d="m10 13.1 5-5"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3.5h3.2l1.9 4.8-2.4 1.5a11 11 0 0 0 6.5 6.5l1.5-2.4 4.8 1.9V19a2 2 0 0 1-2 2A17 17 0 0 1 3 5.5a2 2 0 0 1 2-2Z"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 12a8.5 8.5 0 0 1-12.6 7.4L3.5 20.5l1.1-4.2A8.5 8.5 0 1 1 20.5 12Z"/><path d="M9 10.5c.3 2 1.8 3.6 4 4"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-msg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4.5h16v11.5H9.5L4 20.5Z"/><path d="M8 9h8M8 12.2h5"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3Z"/><path d="M5 17a3 3 0 0 1 3-3h11"/></symbol>
+  <symbol id="i-ticks" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m2.5 12.5 4 4 8-9"/><path d="m11.5 15.5 1 1 8-9"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7.5-4.6-7.5-10.2A4.2 4.2 0 0 1 12 7.2a4.2 4.2 0 0 1 7.5 2.6C19.5 15.4 12 20 12 20Z"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
+</svg>
+
+<div class="page" dir="rtl">
+  <header class="intro">
+    <div class="kicker">چت‌بات پشتیبانی مطب <span data-bind="doctor">دکتر محمد زاهدی</span></div>
+    <h1>ظاهر صفحه‌ی چت را انتخاب کنید</h1>
+    <p>چهار سبک، هر کدام با سه رنگ. با هر انتخاب، گوشی کنار صفحه همان لحظه عوض می‌شود. فرم ورود را پر کنید یا در گفتگو سؤال بپرسید؛ ربات دمو واقعاً جواب می‌دهد.</p>
+  </header>
+
+  <section class="controls" aria-label="انتخاب ظاهر">
+    <div class="group">
+      <div class="group-head"><h2>سبک</h2><span class="hint">حال‌وهوای کلی صفحه</span></div>
+      <div class="styles" id="styleList" role="radiogroup" aria-label="سبک"></div>
+    </div>
+    <div class="group">
+      <div class="group-head"><h2>رنگ</h2><span class="hint" id="variantHint"></span></div>
+      <div class="swatches" id="variantList" role="radiogroup" aria-label="رنگ"></div>
+    </div>
+    <div class="group">
+      <div class="group-head"><h2>صفحه</h2><span class="hint">مراجعه‌کننده اول فرم را می‌بیند</span></div>
+      <div class="seg" role="tablist" aria-label="صفحه">
+        <button type="button" role="tab" id="tabEntry" data-screen="entry">۱. فرم ورود</button>
+        <button type="button" role="tab" id="tabChat" data-screen="chat">۲. گفتگو</button>
+      </div>
+    </div>
+    <div class="pick">
+      <span>انتخاب شما:</span>
+      <span class="code" id="pickCode">B1</span>
+      <span class="name" id="pickName"></span>
+      <button type="button" class="btn solid" id="copyPick">کپی برای فرستادن</button>
+    </div>
+  </section>
+
+  <section class="stage" aria-label="پیش‌نمایش">
+    <div class="phone">
+      <div class="island"></div>
+      <div class="app" id="app" data-style="nana" data-screen="chat">
+        <div class="statusbar" aria-hidden="true">
+          <span>9:41</span>
+          <span class="sb-i">
+            <svg viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
+            <svg viewBox="0 0 26 12" fill="none" stroke="currentColor"><rect x=".5" y=".5" width="22" height="11" rx="3.5" opacity=".5"/><rect x="2.5" y="2.5" width="16" height="7" rx="2" fill="currentColor" stroke="none"/><path d="M24.5 4v4" stroke-width="1.5" stroke-linecap="round" opacity=".5"/></svg>
+          </span>
+        </div>
+
+        <section class="screen entry" aria-label="فرم ورود">
+          <div class="entry-in">
+            <div class="hero">
+              <div class="avatar" data-avatar></div>
+              <p class="hello">سلام عزیزم، خوش اومدی</p>
+              <h3 class="persona" data-bind="persona">ننه پت</h3>
+              <p class="role">پشتیبان آنلاین مطب <span data-bind="doctor">دکتر محمد زاهدی</span></p>
+            </div>
+            <form class="entry-card" id="entryForm" novalidate>
+              <p class="card-lead">قبل از اینکه گپ بزنیم، خودت رو معرفی کن تا بهتر راهنماییت کنم.</p>
+              <label class="field">اسم و فامیل
+                <input id="fName" autocomplete="name" placeholder="مثلاً سارا محمدی">
+              </label>
+              <p class="err" id="errName" hidden></p>
+              <label class="field">شماره موبایل
+                <input id="fPhone" inputmode="numeric" autocomplete="tel" dir="ltr" placeholder="0912 345 6789">
+              </label>
+              <p class="err" id="errPhone" hidden></p>
+              <fieldset class="choice">
+                <legend>عمل بینی انجام داده‌ای؟</legend>
+                <label class="opt"><input type="radio" name="op" id="opYes" value="yes"><span class="opt-body"><svg><use href="#i-heart"/></svg><b>آره، عمل کرده‌ام</b><small>سؤالم درباره‌ی بعد از عمله</small></span></label>
+                <label class="opt"><input type="radio" name="op" id="opNo" value="no"><span class="opt-body"><svg><use href="#i-cal"/></svg><b>نه، هنوز نه</b><small>سؤالم درباره‌ی قبل از عمله</small></span></label>
+              </fieldset>
+              <p class="err" id="errOp" hidden></p>
+              <button class="primary" type="submit">تأیید و شروع گفتگو</button>
+              <p class="privacy">شماره‌ت فقط پیش مطب می‌مونه و جایی منتشر نمی‌شه.</p>
+            </form>
+          </div>
+        </section>
+
+        <section class="screen chat" aria-label="گفتگو">
+          <header class="chat-head">
+            <button type="button" class="icon-btn" id="backBtn" aria-label="برگشت به فرم"><svg><use href="#i-back"/></svg></button>
+            <div class="avatar" data-avatar></div>
+            <div class="head-txt">
+              <span class="head-name" data-bind="persona">ننه پت</span>
+              <span class="head-status" id="headStatus">آنلاین</span>
+            </div>
+            <button type="button" class="icon-btn" id="moreBtn" aria-label="راه‌های تماس با مطب"><svg><use href="#i-more"/></svg></button>
+          </header>
+          <div class="msgs" id="msgs" aria-live="polite"></div>
+          <div class="chips" id="chips"></div>
+          <form class="composer" id="composer">
+            <input id="msgInput" autocomplete="off" placeholder="سؤالت رو بنویس…" aria-label="پیام">
+            <button class="send" type="submit" aria-label="فرستادن"><svg><use href="#i-send"/></svg></button>
+          </form>
+        </section>
+
+        <div class="sheet" id="sheet" hidden>
+          <div class="sheet-card" role="dialog" aria-label="راه‌های تماس">
+            <h4>راه‌های تماس با مطب</h4>
+            <p>شماره‌ها و لینک‌ها از پنل مدیریت تنظیم می‌شوند.</p>
+            <div class="contacts" id="sheetContacts"></div>
+          </div>
+        </div>
+        <div class="toast" id="toast" role="status" hidden></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="extras" aria-label="امتحان کردن">
+    <div class="group">
+      <div class="group-head"><h2>اسم‌ها و عکس</h2><span class="hint">در نسخه‌ی اصلی از پنل مدیریت عوض می‌شوند</span></div>
+      <div class="names">
+        <label>اسم شخصیت<input id="personaInput" value="ننه پت"></label>
+        <label>اسم دکتر<input id="doctorInput" value="دکتر محمد زاهدی"></label>
+      </div>
+      <div class="photo-row">
+        <label class="btn" for="photoInput">انتخاب عکس پروفایل</label>
+        <input type="file" id="photoInput" accept="image/*">
+        <button type="button" class="btn" id="photoClear" hidden>برگشت به نقاشی ننه</button>
+        <span class="hint">عکس فقط روی همین صفحه نشان داده می‌شود و جایی فرستاده نمی‌شود.</span>
+      </div>
+    </div>
+    <div class="group">
+      <div class="group-head"><h2>سؤال‌های امتحانی</h2></div>
+      <div class="tries" id="tries"></div>
+      <p class="note">ربات فقط از دیتابیس جواب می‌دهد. اگر جوابی پیدا نکند، به‌جای حدس زدن راه‌های تماس با مطب را نشان می‌دهد. دیتابیس این دمو چند جواب نمونه دارد و متن‌ها و آدرسش واقعی نیستند؛ متن واقعی را خودتان در پنل وارد می‌کنید.</p>
+    </div>
+  </section>
+</div>
+
+<script>
+'use strict';
+const FA = '۰۱۲۳۴۵۶۷۸۹';
+const toFa = s => String(s).replace(/\d/g, d => FA[d]);
+const toEn = s => String(s).replace(/[۰-۹]/g, d => FA.indexOf(d)).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
+const svgUrl = svg => `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+const $ = id => document.getElementById(id);
+
+// Background patterns, drawn per colour variant.
+const PATTERNS = {
+  tg: c => svgUrl(`<svg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 150 150" fill="none" stroke="${c}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" opacity=".55"><path d="M22 20l2.8 5.8 6.2.9-4.5 4.3 1.1 6.2L22 34.3l-5.6 2.9 1.1-6.2-4.5-4.3 6.2-.9z"/><path d="M104 22c0-4 6-4 6 0 0-4 6-4 6 0 0 4.5-6 8-6 8s-6-3.5-6-8z"/><circle cx="70" cy="66" r="6"/><path d="M26 98c4-5 10-5 14 0"/><path d="M120 84v10M115 89h10"/><path d="M64 124l4 4 8-8"/><circle cx="132" cy="134" r="2.4"/><path d="M50 36h9"/><path d="M96 112c3-3 3-7 0-10"/><circle cx="12" cy="136" r="3.5"/></svg>`),
+  nana: (c, c2) => {
+    const ros = (x, y) => [0, 60, 120, 180, 240, 300].map(a => {
+      const r = a * Math.PI / 180;
+      return `<circle cx="${(x + 6.2 * Math.cos(r)).toFixed(1)}" cy="${(y + 6.2 * Math.sin(r)).toFixed(1)}" r="4.2" fill="${c}"/>`;
+    }).join('') + `<circle cx="${x}" cy="${y}" r="2.8" fill="${c2}"/>`;
+    const leaf = (x, y, a) => `<ellipse cx="${x}" cy="${y}" rx="5" ry="2.2" transform="rotate(${a} ${x} ${y})" fill="${c2}"/>`;
+    return svgUrl(`<svg xmlns="http://www.w3.org/2000/svg" width="76" height="76" viewBox="0 0 76 76"><g opacity=".13">${ros(19, 19)}${ros(57, 57)}${leaf(33, 10, -30)}${leaf(8, 33, 60)}${leaf(71, 44, -30)}${leaf(44, 68, 60)}<circle cx="57" cy="17" r="1.8" fill="${c}"/><circle cx="19" cy="57" r="1.8" fill="${c}"/></g></svg>`);
+  },
+  lux: c => svgUrl(`<svg xmlns="http://www.w3.org/2000/svg" width="84" height="84" viewBox="0 0 84 84" fill="none" stroke="${c}" stroke-width="1" opacity=".1"><rect x="27" y="27" width="30" height="30"/><rect x="27" y="27" width="30" height="30" transform="rotate(45 42 42)"/><path d="M0 0l13 13M84 0 71 13M0 84l13-13M84 84 71 71"/></svg>`),
+  glass: () => 'none',
+};
+
+// Each style: shared tokens plus three colour variants. Tokens land on the phone as CSS custom properties.
+const STYLES = [
+  { id: 'tg', code: 'A', name: 'پیام‌رسانی', desc: 'آشنا و ساده، شبیه تلگرام',
+    base: { 'f-display': 'Vazirmatn, Tahoma, sans-serif', 'app-fg': '#17212b', muted: '#6f7b8a', 'bot-bg': '#ffffff', 'bot-fg': '#17212b', 'card-bg': '#ffffff', 'card-fg': '#17212b', 'input-bg': '#f3f5f7', line: '#e1e6eb', 'composer-bg': '#ffffff', 'head-fg': '#ffffff', 'accent-ink': '#ffffff', 'user-fg': '#17212b', 'user-meta': '#4f9a53', 'chip-bg': 'rgba(255,255,255,.94)', 'chip-border': 'transparent', 'sheet-bg': '#ffffff', err: '#c63a3a', 'av-bg': '#ffe7c7', ring: '#ffffff' },
+    variants: [
+      { name: 'آبی', vars: { accent: '#2f86de', 'accent-soft': '#e3f0fd', 'user-bg': '#effdde', 'app-bg': '#cfe0ee', 'head-bg': '#3390ec', 'av-cloth': '#2f86de', pat: '#8fb2cf' } },
+      { name: 'سبز', vars: { accent: '#168a58', 'accent-soft': '#dcf5e8', 'user-bg': '#d9fdd3', 'app-bg': '#e8e0d5', 'head-bg': '#1a8a5a', 'av-cloth': '#168a58', pat: '#c7b8a4' } },
+      { name: 'بنفش', vars: { accent: '#6d4fcf', 'accent-soft': '#ece6fd', 'user-bg': '#ece5ff', 'user-meta': '#6d4fcf', 'app-bg': '#ddd6f1', 'head-bg': '#7254d4', 'av-cloth': '#6d4fcf', pat: '#b0a3da' } },
+    ] },
+  { id: 'nana', code: 'B', name: 'ننه‌جون', desc: 'گرم و خودمانی، با نقش گل‌گلی و دوخت',
+    base: { 'f-display': '"Noto Nastaliq Urdu", Vazirmatn, serif', 'app-bg': '#faf3e8', 'app-fg': '#3a2219', muted: '#86685a', 'bot-bg': '#fffaf3', 'bot-fg': '#3a2219', 'bot-border': '#ecdcc8', 'card-bg': '#fffaf3', 'card-fg': '#3a2219', 'input-bg': '#ffffff', line: '#ead9c5', 'composer-bg': '#fff7ec', 'head-fg': '#fff8ee', 'accent-ink': '#fff8ee', 'chip-bg': '#fffaf3', 'sheet-bg': '#fffaf3', err: '#b3261e', 'av-bg': '#fff1dc', ring: '#fffaf3' },
+    variants: [
+      { name: 'اناری', vars: { accent: '#a3233a', 'accent-soft': '#f8e0df', 'user-bg': '#f6dcdb', 'user-fg': '#4a1420', 'user-meta': '#a3233a', 'head-bg': '#a3233a', 'persona-c': '#a3233a', 'av-cloth': '#a3233a', pat: '#a3233a', pat2: '#4f7d4f' } },
+      { name: 'زعفرانی', vars: { accent: '#a35406', 'accent-soft': '#fbe7c8', 'user-bg': '#fae3bf', 'user-fg': '#472703', 'user-meta': '#a35406', 'head-bg': '#a35406', 'persona-c': '#a35406', 'av-cloth': '#a35406', pat: '#c27412', pat2: '#8a2f4b' } },
+      { name: 'فیروزه‌ای', vars: { accent: '#0c6f7a', 'accent-soft': '#d5ecea', 'user-bg': '#d2ebe9', 'user-fg': '#0b3a3f', 'user-meta': '#0c6f7a', 'head-bg': '#0c6f7a', 'persona-c': '#0c6f7a', 'av-cloth': '#0c6f7a', pat: '#0c6f7a', pat2: '#b5452f' } },
+    ] },
+  { id: 'lux', code: 'C', name: 'لوکس', desc: 'تیره و طلایی، حال‌وهوای کلینیک زیبایی',
+    base: { 'f-display': '"Noto Kufi Arabic", Vazirmatn, sans-serif', 'accent-ink': '#17120a', 'user-fg': '#17120a', 'user-meta': 'rgba(23,18,10,.6)', err: '#ff8f80', 'av-bg': '#2b2620', 'persona-c': 'var(--accent)' },
+    variants: [
+      { name: 'طلایی و مشکی', vars: { 'app-bg': '#0e0f12', 'head-bg': '#0e0f12', 'bot-bg': '#181a20', 'card-bg': '#15171c', 'input-bg': '#1d2027', 'composer-bg': '#121317', line: 'rgba(201,163,91,.26)', 'chip-bg': 'rgba(201,163,91,.08)', 'sheet-bg': '#15171c', accent: '#c9a35b', 'accent-soft': 'rgba(201,163,91,.14)', 'user-bg': 'linear-gradient(135deg,#e3c37f,#b88b44)', 'btn-bg': 'linear-gradient(135deg,#e3c37f,#b88b44)', 'app-fg': '#ece6da', 'bot-fg': '#ece6da', 'card-fg': '#ece6da', 'head-fg': '#ece6da', muted: '#938c7e', 'av-cloth': '#c9a35b', ring: '#0e0f12', pat: '#c9a35b' } },
+      { name: 'سرمه‌ای و شامپاینی', vars: { 'app-bg': '#0b1424', 'head-bg': '#0b1424', 'bot-bg': '#14213a', 'card-bg': '#111c31', 'input-bg': '#192741', 'composer-bg': '#0e1829', line: 'rgba(227,199,154,.24)', 'chip-bg': 'rgba(227,199,154,.08)', 'sheet-bg': '#111c31', accent: '#e3c79a', 'accent-soft': 'rgba(227,199,154,.14)', 'user-bg': 'linear-gradient(135deg,#f1dcb9,#cdab78)', 'btn-bg': 'linear-gradient(135deg,#f1dcb9,#cdab78)', 'app-fg': '#eef0f5', 'bot-fg': '#eef0f5', 'card-fg': '#eef0f5', 'head-fg': '#eef0f5', muted: '#8e99ae', 'av-cloth': '#cdab78', ring: '#0b1424', pat: '#e3c79a' } },
+      { name: 'رزگلد', vars: { 'app-bg': '#170f14', 'head-bg': '#170f14', 'bot-bg': '#24161e', 'card-bg': '#1f1319', 'input-bg': '#2b1b24', 'composer-bg': '#1a1016', line: 'rgba(227,165,144,.25)', 'chip-bg': 'rgba(227,165,144,.08)', 'sheet-bg': '#1f1319', accent: '#e3a590', 'accent-soft': 'rgba(227,165,144,.14)', 'user-bg': 'linear-gradient(135deg,#f3c4b2,#cd8a75)', 'btn-bg': 'linear-gradient(135deg,#f3c4b2,#cd8a75)', 'app-fg': '#f5e9ec', 'bot-fg': '#f5e9ec', 'card-fg': '#f5e9ec', 'head-fg': '#f5e9ec', muted: '#a68d95', 'av-cloth': '#cd8a75', ring: '#170f14', pat: '#e3a590' } },
+    ] },
+  { id: 'glass', code: 'D', name: 'شیشه‌ای', desc: 'پاستلی و سبک، هم‌خانواده‌ی پنل نوبت‌دهی',
+    base: { 'f-display': 'Vazirmatn, Tahoma, sans-serif', 'app-fg': '#2a2233', muted: '#6b6176', 'bot-bg': 'rgba(255,255,255,.66)', 'bot-fg': '#2a2233', 'bot-border': 'rgba(255,255,255,.85)', 'card-bg': 'rgba(255,255,255,.6)', 'card-fg': '#2a2233', 'input-bg': 'rgba(255,255,255,.8)', 'composer-bg': 'rgba(255,255,255,.5)', line: 'rgba(255,255,255,.9)', 'head-bg': 'rgba(255,255,255,.45)', 'head-fg': '#2a2233', 'accent-ink': '#ffffff', 'user-fg': '#ffffff', 'user-meta': 'rgba(255,255,255,.8)', 'chip-bg': 'rgba(255,255,255,.6)', 'contact-bg': 'rgba(255,255,255,.75)', 'sheet-bg': 'rgba(255,255,255,.94)', err: '#b3261e', 'av-bg': '#ffffff', ring: '#ffffff' },
+    variants: [
+      { name: 'گلبهی', vars: { 'app-bg': '#f7eef2', orb1: '#f4b9cb', orb2: '#fcd6c0', orb3: '#e3cdf3', accent: '#c83c64', 'accent-soft': 'rgba(200,60,100,.12)', 'user-bg': 'linear-gradient(135deg,#e6638a,#c4385f)', 'btn-bg': 'linear-gradient(135deg,#e6638a,#c4385f)', 'av-cloth': '#d9547b' } },
+      { name: 'یاسی', vars: { 'app-bg': '#f1eef8', orb1: '#d2c3f5', orb2: '#c4dbf7', orb3: '#f2cde6', accent: '#7050cc', 'accent-soft': 'rgba(112,80,204,.12)', 'user-bg': 'linear-gradient(135deg,#9273e0,#6a44c6)', 'btn-bg': 'linear-gradient(135deg,#9273e0,#6a44c6)', 'av-cloth': '#8466d8' } },
+      { name: 'نعنایی', vars: { 'app-bg': '#eef6f3', orb1: '#bfeadc', orb2: '#cfe5f7', orb3: '#eef0c2', accent: '#0f7a67', 'accent-soft': 'rgba(15,122,103,.12)', 'user-bg': 'linear-gradient(135deg,#25a58c,#0e7462)', 'btn-bg': 'linear-gradient(135deg,#25a58c,#0e7462)', 'av-cloth': '#1b9a82' } },
+    ] },
+];
+
+// A tiny sample knowledge base. The real one is written by the clinic in the admin panel.
+const KB = [
+  { cat: 'مراقبت بعد از عمل', keys: ['دوش', 'حمام', 'حموم', 'سرم رو بشورم', 'شستن سر', 'موهام'], a: 'تا وقتی آتل روی بینیته، دوش گرفتن از گردن به پایین اشکالی نداره؛ فقط مواظب باش آتل خیس نشه. برای شستن سر، سرت رو به عقب خم کن و از یکی کمک بگیر.' },
+  { cat: 'مراقبت بعد از عمل', keys: ['ورم', 'تورم', 'کبودی', 'کبود', 'پف'], a: 'ورم و کبودی دور چشم توی روزهای اول کاملاً طبیعیه و کم‌کم می‌خوابه. ۴۸ ساعت اول کمپرس سرد بذار و موقع خواب سرت رو با دو تا بالش بالاتر نگه دار.' },
+  { cat: 'مراقبت بعد از عمل', keys: ['آتل', 'چسب', 'گچ', 'بخیه', 'تامپون', 'برمیدارن', 'برمی دارن'], a: 'آتل و چسب‌ها رو خودت دست نزن. معمولاً حدود یک هفته بعد از عمل، توی مطب و توسط دکتر برداشته می‌شن. زمان دقیقش رو موقع ترخیص بهت می‌گن.' },
+  { cat: 'مراقبت بعد از عمل', keys: ['عینک'], a: 'تا وقتی دکتر اجازه نداده، عینک رو مستقیم روی بینی نذار. اگه عینک لازم داری، توی ویزیت بعد از عمل بپرس تا راهش رو بهت بگن.' },
+  { cat: 'مراقبت بعد از عمل', keys: ['ورزش', 'باشگاه', 'دویدن', 'شنا'], a: 'پیاده‌روی آروم از همون روزهای اول خوبه. ورزش سنگین، باشگاه و شنا رو تا وقتی دکتر توی ویزیت‌های بعدی اجازه نداده شروع نکن.' },
+  { cat: 'آمادگی قبل از عمل', keys: ['قبل از عمل', 'قبل عمل', 'آمادگی', 'ناشتا', 'آسپرین', 'دارو', 'سیگار'], a: 'چند نکته‌ی مهم قبل از عمل:\n• داروهایی که مصرف می‌کنی رو حتماً به دکتر بگو.\n• آسپرین و مکمل‌ها رو فقط با نظر خود دکتر قطع کن.\n• سیگار رو کنار بذار.\n• شب قبل از عمل طبق ساعتی که مطب می‌گه ناشتا باش.' },
+  { cat: 'آدرس و ساعت کاری', keys: ['آدرس', 'کجاست', 'کجا', 'لوکیشن', 'نشانی', 'پارکینگ'], a: 'آدرس مطب: تهران، خیابان نمونه، ساختمان پزشکان نمونه، طبقه‌ی سوم.\n(این آدرس نمونه است؛ آدرس واقعی رو از پنل وارد می‌کنید.)' },
+  { cat: 'آدرس و ساعت کاری', keys: ['ساعت کاری', 'چه ساعتی', 'چه روزهایی', 'تعطیل', 'باز است', 'بازه'], a: 'مطب شنبه تا چهارشنبه از ساعت ۱۶ تا ۲۰ پذیرش داره و پنجشنبه و جمعه تعطیله.\n(ساعت‌ها نمونه است.)' },
+  { cat: 'نوبت و مشاوره', keys: ['نوبت', 'مشاوره', 'ویزیت', 'رزرو'], a: 'برای گرفتن نوبت مشاوره، به واتس‌اپ یا دایرکت اینستاگرام مطب پیام بده تا همکارهام روز و ساعتش رو باهات هماهنگ کنن.', contacts: true },
+];
+const SMALL_TALK = [
+  { keys: ['ممنون', 'مرسی', 'سپاس', 'دستت درد نکنه', 'تشکر'], a: 'خواهش می‌کنم عزیزم، قربونت برم. سؤال دیگه‌ای داشتی بپرس.' },
+  { keys: ['سلام', 'درود', 'وقت بخیر'], a: 'سلام به روی ماهت! بگو ببینم چه سؤالی داری؟' },
+  { keys: ['پشتیبانی', 'تماس', 'شماره', 'اپراتور', 'آدم واقعی'], a: 'حتماً عزیزم. از هر کدوم از این راه‌ها راحت‌تری، با همکارهام توی مطب حرف بزن:', contacts: true },
+];
+const PREFIX = ['قربونت برم، ', 'الهی بگردم، ', 'عزیز دلم، ', 'گلم، '];
+const FALLBACK = 'عزیزم، جواب این سؤال توی دفترچه‌ی من نیست و دلم نمی‌خواد چیزی از خودم بگم. لطفاً از یکی از این راه‌ها با همکارهام توی مطب در تماس باش:';
+const CONTACTS = [
+  { icon: 'i-phone', label: 'تماس تلفنی' },
+  { icon: 'i-chat', label: 'واتس‌اپ' },
+  { icon: 'i-camera', label: 'اینستاگرام' },
+  { icon: 'i-msg', label: 'روبیکا' },
+];
+const CHIPS = {
+  yes: ['کی می‌تونم دوش بگیرم؟', 'ورم و کبودی', 'آتل رو کی برمی‌دارن؟', 'ورزش', 'آدرس مطب', 'تماس با پشتیبانی'],
+  no: ['آمادگی قبل از عمل', 'گرفتن نوبت مشاوره', 'آدرس مطب', 'ساعت کاری', 'هزینه‌ی عمل', 'تماس با پشتیبانی'],
+};
+const TRIES = [
+  ['کی می‌تونم دوش بگیرم؟'], ['ورم صورتم کی می‌خوابه؟'], ['آدرس مطب کجاست؟'], ['برای نوبت مشاوره چی کار کنم؟'], ['هزینه‌ی عمل چقدره؟', 'در دیتابیس نیست'],
+];
+
+const state = {
+  style: 0, variant: 0, screen: 'chat',
+  persona: 'ننه پت', doctor: 'دکتر محمد زاهدی', photo: '',
+  user: { first: 'سارا', operated: true },
+  msgs: [], typing: false, prefixAt: 0,
+};
+
+const norm = s => toEn(s).replace(/[يى]/g, 'ی').replace(/ك/g, 'ک').replace(/[ً-ْ]/g, '').replace(/[‌‏‎]/g, ' ').replace(/\s+/g, ' ').trim();
+function findAnswer(q) {
+  const t = norm(q);
+  let best = null, bestScore = 0;
+  for (const e of KB) {
+    const score = e.keys.reduce((n, k) => n + (t.includes(norm(k)) ? norm(k).length : 0), 0);
+    if (score > bestScore) { best = e; bestScore = score; }
+  }
+  if (best) return { text: PREFIX[state.prefixAt++ % PREFIX.length] + best.a, src: best.cat, contacts: !!best.contacts };
+  const talk = SMALL_TALK.find(e => e.keys.some(k => t.includes(norm(k))));
+  if (talk) return { text: talk.a, contacts: !!talk.contacts };
+  return { text: FALLBACK, contacts: true };
+}
+
+const greeting = () => {
+  const { first, operated } = state.user;
+  const tail = operated
+    ? 'ان‌شاءالله که دوران بعد از عملت به خوبی و خوشی بگذره. هر سؤالی درباره‌ی مراقبت‌ها داری بپرس.'
+    : 'اگه برای عمل سؤال داری، از آمادگی قبل از عمل تا آدرس و نوبت، بپرس.';
+  return `سلام ${first} جان، خوش اومدی 🌸\nمن ${state.persona}‌ام، از طرف مطب ${state.doctor} اینجام. ${tail}`;
+};
+const now = () => { const d = new Date(); return toFa(`${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`); };
+
+function seedChat() {
+  state.user = { first: 'سارا', operated: true };
+  state.prefixAt = 0;
+  const shower = findAnswer('کی می‌تونم دوش بگیرم');
+  const price = findAnswer('هزینه‌ی عمل چقدره');
+  state.msgs = [
+    { from: 'bot', greet: true, time: '۱۰:۲۰' },
+    { from: 'user', text: 'سلام ننه جون، کی می‌تونم دوش بگیرم؟', time: '۱۰:۲۱' },
+    { from: 'bot', ...shower, time: '۱۰:۲۱' },
+    { from: 'user', text: 'هزینه‌ی عمل چقدره؟', time: '۱۰:۲۲' },
+    { from: 'bot', ...price, time: '۱۰:۲۲' },
+  ];
+}
+
+function useIcon(id) {
+  const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  const u = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+  u.setAttribute('href', '#' + id);
+  s.append(u);
+  return s;
+}
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+
+function contactGrid() {
+  const g = el('div', 'contacts');
+  for (const c of CONTACTS) {
+    const b = el('button', 'contact');
+    b.type = 'button';
+    b.append(useIcon(c.icon), el('span', null, c.label));
+    b.addEventListener('click', () => toast(`در نسخه‌ی واقعی، این دکمه ${c.label} مطب را باز می‌کند.`));
+    g.append(b);
+  }
+  return g;
+}
+
+function renderMsgs() {
+  const box = $('msgs');
+  box.replaceChildren(el('div', 'day', 'امروز'));
+  for (const m of state.msgs) {
+    const b = el('div', `msg ${m.from}${m.fresh ? ' fresh' : ''}`);
+    m.fresh = false;
+    b.append(el('p', null, m.greet ? greeting() : m.text));
+    if (m.contacts) b.append(contactGrid());
+    const meta = el('div', 'meta', m.time);
+    if (m.from === 'user') meta.append(useIcon('i-ticks'));
+    b.append(meta);
+    box.append(b);
+  }
+  if (state.typing) { const t = el('div', 'typing'); t.append(el('i'), el('i'), el('i')); box.append(t); }
+  $('headStatus').textContent = state.typing ? 'داره می‌نویسه…' : 'آنلاین';
+  box.scrollTop = box.scrollHeight;
+}
+
+function renderChips() {
+  const row = $('chips');
+  row.replaceChildren();
+  for (const c of CHIPS[state.user.operated ? 'yes' : 'no']) {
+    const b = el('button', 'chip', c);
+    b.type = 'button';
+    b.addEventListener('click', () => ask(c));
+    row.append(b);
+  }
+}
+
+let replyTimer = 0;
+function ask(text) {
+  text = text.trim();
+  if (!text) return;
+  if (state.screen !== 'chat') setScreen('chat');
+  clearTimeout(replyTimer);
+  state.msgs.push({ from: 'user', text, time: now(), fresh: true });
+  state.typing = true;
+  renderMsgs();
+  replyTimer = setTimeout(() => {
+    state.typing = false;
+    state.msgs.push({ from: 'bot', ...findAnswer(text), time: now(), fresh: true });
+    renderMsgs();
+  }, 900);
+}
+
+function renderAvatars() {
+  for (const slot of document.querySelectorAll('[data-avatar]')) {
+    slot.replaceChildren();
+    if (state.photo) { const i = el('img'); i.src = state.photo; i.alt = ''; slot.append(i); }
+    else {
+      const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      s.setAttribute('viewBox', '0 0 100 100');
+      const u = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+      u.setAttribute('href', '#nana');
+      s.append(u);
+      slot.append(s);
+    }
+    slot.append(el('i', 'on'));
+  }
+  $('photoClear').hidden = !state.photo;
+}
+
+function tokensFor(si, vi) {
+  const st = STYLES[si];
+  return { ...st.base, ...st.variants[vi].vars };
+}
+
+function applyLook() {
+  const st = STYLES[state.style], v = st.variants[state.variant];
+  const app = $('app');
+  app.dataset.style = st.id;
+  app.removeAttribute('style');
+  const t = tokensFor(state.style, state.variant);
+  for (const [k, val] of Object.entries(t)) app.style.setProperty('--' + k, val);
+  app.style.setProperty('--pattern', PATTERNS[st.id](t.pat, t.pat2));
+  $('pickCode').textContent = st.code + toFa(state.variant + 1);
+  $('pickName').textContent = `${st.name}، رنگ ${v.name}`;
+  $('variantHint').textContent = `سه رنگ برای سبک «${st.name}»`;
+  renderStyleList();
+  renderVariantList();
+  save();
+}
+
+function thumb(t, isGlass) {
+  const th = el('span', 'thumb');
+  th.style.background = isGlass ? `radial-gradient(circle at 90% 10%, ${t.orb1}, transparent 60%), radial-gradient(circle at 10% 90%, ${t.orb2}, transparent 60%), ${t['app-bg']}` : t['app-bg'];
+  const head = el('i', 't-head'); head.style.background = isGlass ? 'rgba(255,255,255,.6)' : t['head-bg'];
+  const body = el('span', 't-body');
+  const b1 = el('i', 't-b'); b1.style.background = t['bot-bg'];
+  const u1 = el('i', 't-u'); u1.style.background = t['user-bg'];
+  const b2 = el('i', 't-b'); b2.style.background = t['bot-bg']; b2.style.width = '50%';
+  body.append(b1, u1, b2);
+  th.append(head, body);
+  return th;
+}
+
+function renderStyleList() {
+  const list = $('styleList');
+  list.replaceChildren();
+  STYLES.forEach((st, i) => {
+    const b = el('button', 'style-card');
+    b.type = 'button';
+    b.id = 'style-' + st.id;
+    b.setAttribute('role', 'radio');
+    b.setAttribute('aria-checked', String(i === state.style));
+    const txt = el('span', 'txt');
+    const name = el('b'); name.append(el('span', null, st.code), document.createTextNode(st.name));
+    txt.append(name, el('small', null, st.desc));
+    b.append(thumb(tokensFor(i, i === state.style ? state.variant : 0), st.id === 'glass'), txt);
+    b.addEventListener('click', () => { state.style = i; state.variant = 0; applyLook(); });
+    list.append(b);
+  });
+}
+
+function renderVariantList() {
+  const list = $('variantList');
+  list.replaceChildren();
+  STYLES[state.style].variants.forEach((v, i) => {
+    const t = tokensFor(state.style, i);
+    const b = el('button', 'swatch');
+    b.type = 'button';
+    b.id = 'variant-' + i;
+    b.setAttribute('role', 'radio');
+    b.setAttribute('aria-checked', String(i === state.variant));
+    const d = el('span', 'dot');
+    d.style.background = `linear-gradient(135deg, ${t.accent} 0 55%, ${t['app-bg']} 55%)`;
+    b.append(d, el('span', null, v.name));
+    b.addEventListener('click', () => { state.variant = i; applyLook(); });
+    list.append(b);
+  });
+}
+
+function setScreen(s) {
+  state.screen = s;
+  $('app').dataset.screen = s;
+  $('tabEntry').setAttribute('aria-selected', String(s === 'entry'));
+  $('tabChat').setAttribute('aria-selected', String(s === 'chat'));
+  $('sheet').hidden = true;
+  if (s === 'chat') renderMsgs();
+}
+
+function bindNames() {
+  for (const n of document.querySelectorAll('[data-bind="persona"]')) n.textContent = state.persona;
+  for (const n of document.querySelectorAll('[data-bind="doctor"]')) n.textContent = state.doctor;
+  renderMsgs();
+}
+
+let toastTimer = 0;
+function toast(msg) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.hidden = true; }, 2600);
+}
+
+function showErr(id, msg) { const e = $(id); e.textContent = msg || ''; e.hidden = !msg; }
+
+$('entryForm').addEventListener('submit', ev => {
+  ev.preventDefault();
+  const name = $('fName').value.trim().replace(/\s+/g, ' ');
+  let phone = toEn($('fPhone').value).replace(/[\s\-()]/g, '');
+  if (phone.startsWith('+98')) phone = '0' + phone.slice(3);
+  else if (phone.startsWith('0098')) phone = '0' + phone.slice(4);
+  const op = document.querySelector('input[name="op"]:checked');
+  const nameErr = name.length < 2 ? 'اسمت رو بنویس تا بدونم با کی حرف می‌زنم.' : '';
+  const phoneErr = /^09\d{9}$/.test(phone) ? '' : 'شماره موبایل باید ۱۱ رقم باشه و با ۰۹ شروع بشه.';
+  const opErr = op ? '' : 'یکی از دو گزینه رو انتخاب کن.';
+  showErr('errName', nameErr); showErr('errPhone', phoneErr); showErr('errOp', opErr);
+  if (nameErr || phoneErr || opErr) return;
+  clearTimeout(replyTimer);
+  state.typing = false;
+  state.prefixAt = 0;
+  state.user = { first: name.split(' ')[0], operated: op.value === 'yes' };
+  state.msgs = [{ from: 'bot', greet: true, time: now(), fresh: true }];
+  renderChips();
+  setScreen('chat');
+});
+for (const id of ['fName', 'fPhone']) $(id).addEventListener('input', () => showErr(id === 'fName' ? 'errName' : 'errPhone', ''));
+for (const r of document.querySelectorAll('input[name="op"]')) r.addEventListener('change', () => showErr('errOp', ''));
+
+$('composer').addEventListener('submit', ev => {
+  ev.preventDefault();
+  const input = $('msgInput');
+  ask(input.value);
+  input.value = '';
+});
+$('backBtn').addEventListener('click', () => setScreen('entry'));
+$('moreBtn').addEventListener('click', () => { $('sheet').hidden = false; });
+$('sheet').addEventListener('click', ev => { if (ev.target.id === 'sheet') $('sheet').hidden = true; });
+$('sheetContacts').replaceWith(Object.assign(contactGrid(), { id: 'sheetContacts' }));
+for (const b of document.querySelectorAll('.seg button')) b.addEventListener('click', () => setScreen(b.dataset.screen));
+
+$('personaInput').addEventListener('input', e => { state.persona = e.target.value.trim() || 'ننه پت'; bindNames(); save(); });
+$('doctorInput').addEventListener('input', e => { state.doctor = e.target.value.trim() || 'دکتر محمد زاهدی'; bindNames(); save(); });
+$('photoInput').addEventListener('change', e => {
+  const f = e.target.files && e.target.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = () => { state.photo = String(r.result); renderAvatars(); };
+  r.readAsDataURL(f);
+});
+$('photoClear').addEventListener('click', () => { state.photo = ''; $('photoInput').value = ''; renderAvatars(); });
+
+for (const [q, tag] of TRIES) {
+  const b = el('button', 'try', q);
+  b.type = 'button';
+  if (tag) b.append(el('em', null, tag));
+  b.addEventListener('click', () => ask(q));
+  $('tries').append(b);
+}
+
+$('copyPick').addEventListener('click', () => {
+  const st = STYLES[state.style];
+  const text = `طرح انتخابی چت: ${st.code}${state.variant + 1} (${st.name}، رنگ ${st.variants[state.variant].name})`;
+  const done = () => { $('copyPick').textContent = 'کپی شد'; setTimeout(() => { $('copyPick').textContent = 'کپی برای فرستادن'; }, 1800); };
+  const fallback = () => { const r = document.createRange(); r.selectNodeContents($('pickName').parentNode); const s = getSelection(); s.removeAllRanges(); s.addRange(r); };
+  try { navigator.clipboard.writeText(text).then(done, fallback); } catch { fallback(); }
+});
+
+function save() {
+  try { localStorage.setItem('chat-demo-2', JSON.stringify({ style: state.style, variant: state.variant, persona: state.persona, doctor: state.doctor })); } catch { /* storage is optional */ }
+}
+function load() {
+  try {
+    const s = JSON.parse(localStorage.getItem('chat-demo-2') || 'null');
+    if (s && STYLES[s.style] && STYLES[s.style].variants[s.variant]) { state.style = s.style; state.variant = s.variant; }
+    if (s && s.persona) state.persona = s.persona;
+    if (s && s.doctor) state.doctor = s.doctor;
+  } catch { /* storage is optional */ }
+  const m = /^#([A-D])([1-3])(entry|chat)?$/.exec(location.hash);
+  if (m) { state.style = 'ABCD'.indexOf(m[1]); state.variant = Number(m[2]) - 1; if (m[3]) state.screen = m[3]; }
+  $('personaInput').value = state.persona;
+  $('doctorInput').value = state.doctor;
+}
+
+// Hook for taking screenshots of every combination.
+window.demo = {
+  set(style, variant, screen) { state.style = style; state.variant = variant; applyLook(); setScreen(screen); },
+};
+
+load();
+seedChat();
+renderAvatars();
+renderChips();
+applyLook();
+bindNames();
+setScreen(state.screen);
+</script>

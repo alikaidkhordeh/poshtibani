@@ -1,0 +1,1134 @@
+<title>پنل مدیریت ننه پت</title>
+<script>document.documentElement.lang = 'fa'; document.documentElement.dir = 'rtl';</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap">
+<style>
+/* Layout: a demo bar on top, then the admin panel in a framed window.
+   Design 1 keeps the old panel's shape (header + tabs). Design 2 uses a side menu with more sections.
+   The panel commits to a light look on purpose: it is a preview of the real admin, which is light. */
+:root {
+  --ink: #1e1b2b;
+  --ink-2: #575268;
+  --ink-3: #8a8699;
+  --line: #e6e3ee;
+  --bg: #f4f3f8;
+  --card: #ffffff;
+  --ok: #157f47;
+  --ok-soft: #e1f4e9;
+  --danger: #c93434;
+  --danger-soft: #fdecec;
+  --amber: #9a5d0c;
+  --amber-soft: #fdf0db;
+  --s-not: #e8962e;
+  --f: Vazirmatn, Tahoma, "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { background: var(--bg); color: var(--ink); }
+body { margin: 0; font-family: var(--f); font-size: 14.5px; line-height: 1.75; -webkit-font-smoothing: antialiased; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent, #6d4fd0); outline-offset: 2px; }
+.ltr { direction: ltr; unicode-bidi: isolate; }
+.ic { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.num { font-variant-numeric: tabular-nums; }
+
+.wrap { padding-inline: 16px; padding-block: 18px 48px; max-width: 1380px; margin-inline: auto; display: flex; flex-direction: column; gap: 14px; }
+
+/* Demo bar: not part of the panel */
+.demobar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; padding: 12px 16px; border-radius: 16px; background: #23202d; color: #f1eff6; }
+.demobar .db-txt { display: flex; flex-direction: column; flex: 1; min-width: 220px; }
+.demobar .db-txt b { font-size: 16px; }
+.demobar .db-txt span { font-size: 13px; color: #b9b4c7; }
+.db-seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.db-seg button, .db-login { border: 1px solid #4a4558; background: transparent; color: #e7e3f0; border-radius: 12px; padding: 7px 14px; font-weight: 700; font-size: 14px; }
+.db-seg button[aria-selected="true"] { background: #f1eff6; color: #23202d; border-color: #f1eff6; }
+
+.frame { border-radius: 20px; overflow: hidden; border: 1px solid var(--line); background: var(--bg); min-height: 780px; box-shadow: 0 24px 60px -40px rgba(30, 20, 60, .45); }
+
+/* ───────── shared controls ───────── */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: 11px; padding: 6px 13px; font-weight: 700; font-size: 13.5px; white-space: nowrap; }
+.btn svg { width: 17px; height: 17px; flex: none; }
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn.soft { background: var(--accent-soft); border-color: transparent; color: var(--accent-ink); }
+.btn.danger { color: var(--danger); }
+.btn.danger:hover { border-color: var(--danger); }
+.btn.icon { padding: 6px; }
+.btn.wide { width: 100%; padding-block: 10px; font-size: 15px; }
+.inp { width: 100%; min-width: 0; height: 42px; border-radius: 11px; border: 1px solid var(--line); background: #fff; padding-inline: 12px; font-size: 14.5px; color: var(--ink); }
+.inp::placeholder { color: var(--ink-3); }
+.inp:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+textarea.inp { height: auto; padding-block: 9px; line-height: 1.85; resize: vertical; }
+select.inp { padding-inline: 10px; }
+.field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.f-label { font-size: 13px; font-weight: 700; color: var(--ink-2); }
+.f-hint { font-size: 12px; color: var(--ink-3); line-height: 1.7; }
+.row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.grow { flex: 1; min-width: 0; }
+.stack { display: flex; flex-direction: column; gap: 14px; }
+
+.tog { flex: none; width: 42px; height: 24px; border-radius: 99px; border: 0; padding: 0; background: #d5d2de; position: relative; transition: background .15s; }
+.tog i { position: absolute; top: 3px; inset-inline-start: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.25); transition: inset-inline-start .15s; }
+.tog[aria-checked="true"] { background: var(--accent); }
+.tog[aria-checked="true"] i { inset-inline-start: 21px; }
+
+.pill { display: inline-flex; align-items: center; gap: 5px; border-radius: 99px; padding: 1px 10px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.pill.op { background: var(--accent-soft); color: var(--accent-ink); }
+.pill.not { background: var(--amber-soft); color: var(--amber); }
+.pill.on { background: var(--ok-soft); color: var(--ok); }
+.pill.warn { background: var(--amber-soft); color: var(--amber); }
+.pill.mute { background: #f0eef4; color: var(--ink-2); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); flex: none; }
+
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.card-head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 8px 14px; }
+.card-head h3 { margin: 0; font-size: 16px; font-weight: 800; line-height: 1.6; }
+.card-sub { margin: 2px 0 0; font-size: 12.5px; color: var(--ink-3); }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.tile { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; }
+.tile .t-l { font-size: 13px; color: var(--ink-2); font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.tile .t-n { font-size: 28px; font-weight: 800; line-height: 1.4; font-variant-numeric: tabular-nums; }
+.tile .t-s { font-size: 12px; color: var(--ink-3); }
+.tile.warn .t-n { color: var(--amber); }
+
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.search { position: relative; flex: 1; min-width: 180px; max-width: 320px; }
+.search svg { position: absolute; top: 50%; inset-inline-start: 11px; transform: translateY(-50%); width: 17px; height: 17px; color: var(--ink-3); }
+.search .inp { padding-inline-start: 36px; height: 38px; }
+.seg { display: inline-flex; flex-wrap: wrap; gap: 3px; padding: 3px; border-radius: 12px; background: #f0eef5; }
+.seg button { border: 0; background: transparent; border-radius: 9px; padding: 4px 12px; font-size: 13px; font-weight: 700; color: var(--ink-2); }
+.seg button[aria-selected="true"] { background: #fff; color: var(--accent-ink); box-shadow: 0 1px 2px rgba(20, 10, 40, .12); }
+
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; }
+.table-wrap.tall { max-height: 560px; overflow-y: auto; }
+.table-wrap.tall th { position: sticky; top: 0; z-index: 1; }
+table { width: 100%; border-collapse: collapse; min-width: 680px; font-size: 13.5px; }
+th { text-align: start; font-weight: 700; color: var(--ink-2); font-size: 12.5px; background: #faf9fc; padding: 9px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 9px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+tbody tr:last-child td { border-bottom: 0; }
+tbody tr { cursor: pointer; }
+tbody tr:hover td { background: #faf9fd; }
+.who { display: flex; align-items: center; gap: 9px; }
+.ini { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 800; background: #efedf4; color: var(--ink-2); flex: none; position: relative; }
+.ini .dot { position: absolute; bottom: -1px; inset-inline-start: -1px; box-shadow: 0 0 0 2px #fff; }
+.empty { padding: 26px; text-align: center; color: var(--ink-3); }
+
+/* Conversation bubbles inside the panel */
+.convo { display: flex; flex-direction: column; gap: 7px; padding: 14px; background: #f6f5fa; border-radius: 14px; overflow-y: auto; }
+.bub { max-width: 82%; padding: 7px 12px 5px; border-radius: 15px; font-size: 13.5px; line-height: 1.8; white-space: pre-line; overflow-wrap: anywhere; }
+.bub.user { align-self: flex-start; background: #fff; border: 1px solid var(--line); border-start-start-radius: 5px; }
+.bub.bot { align-self: flex-end; background: var(--accent-soft); border-start-end-radius: 5px; }
+.bub.staff { align-self: flex-end; background: var(--amber-soft); border-start-end-radius: 5px; }
+.bub .b-meta { display: flex; justify-content: flex-end; gap: 6px; align-items: center; font-size: 11px; color: var(--ink-3); margin-top: 2px; }
+.bub .b-who { font-size: 11.5px; font-weight: 800; color: var(--amber); display: block; }
+
+/* Modal, toast */
+.modal { position: fixed; inset: 0; z-index: 50; background: rgba(25, 18, 40, .45); display: grid; place-items: center; padding: 16px; }
+.modal-card { width: min(640px, 100%); max-height: calc(100dvh - 32px); overflow: auto; background: #fff; border-radius: 20px; padding: 18px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 30px 60px -20px rgba(25, 18, 40, .5); }
+.modal-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.modal-head h3 { margin: 0; font-size: 17px; }
+.modal .convo { max-height: 52vh; }
+.toast { position: fixed; z-index: 60; bottom: 22px; left: 50%; transform: translateX(-50%); background: #23202d; color: #fff; padding: 9px 16px; border-radius: 14px; font-size: 13.5px; max-width: calc(100% - 32px); text-align: center; box-shadow: 0 12px 30px -12px rgba(0,0,0,.5); }
+
+/* Login */
+.login { min-height: 780px; display: grid; place-items: center; padding: 24px 16px; background: radial-gradient(circle at 80% 10%, var(--accent-soft), transparent 50%), var(--bg); }
+.login-card { width: min(380px, 100%); background: #fff; border: 1px solid var(--line); border-radius: 22px; padding: 26px 22px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 30px 60px -40px rgba(30, 20, 60, .5); }
+.login-card .logo { align-self: center; }
+.login-card h2 { margin: 0; text-align: center; font-size: 20px; }
+.login-card p { margin: -8px 0 4px; text-align: center; color: var(--ink-3); font-size: 13.5px; }
+.login-card .login-note { margin: 0; font-size: 12px; }
+.logo { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 800; font-size: 17px; background: var(--logo-bg); flex: none; overflow: hidden; }
+.logo.big { width: 64px; height: 64px; font-size: 26px; }
+.logo svg, .logo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* Avatar art */
+.av { display: block; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+
+/* ───────── Design 1: header + tabs, like the old panel ───────── */
+.d1 { --accent: #6d4fd0; --accent-ink: #5a3cc0; --accent-soft: #efeafd; --accent-2: #2f6fd8; --accent-2-soft: #e8f0fd; --logo-bg: linear-gradient(135deg, #8b6be6, #6d4fd0); }
+.d1 .top { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 12px 20px; background: #fff; border-bottom: 1px solid var(--line); }
+.d1 .top h1 { margin: 0; font-size: 17px; font-weight: 800; flex: 1; min-width: 200px; }
+.d1 .logout { border: 0; background: none; color: var(--danger); font-weight: 700; font-size: 13.5px; padding: 4px 6px; }
+.d1 .tabs { display: flex; gap: 4px; overflow-x: auto; padding: 0 20px; background: var(--bg); border-bottom: 1px solid var(--line); }
+.d1 .tabs button { border: 0; background: none; padding: 12px 14px 10px; font-weight: 700; font-size: 14px; color: var(--ink-3); border-bottom: 2.5px solid transparent; white-space: nowrap; }
+.d1 .tabs button[aria-selected="true"] { color: var(--accent-ink); border-bottom-color: var(--accent); }
+.d1 .main { padding: 20px; display: flex; flex-direction: column; gap: 16px; max-width: 1200px; margin-inline: auto; width: 100%; }
+.d1 .page-title { margin: 0; font-size: 18px; font-weight: 800; }
+.part { border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 12px; border: 1px solid; min-width: 0; }
+.part.p1 { background: #faf7ff; border-color: #e5dcfb; }
+.part.p2 { background: #f4f8ff; border-color: #d5e4fb; }
+.part-head { display: flex; flex-direction: column; gap: 2px; }
+.part-head b { font-size: 15px; display: flex; align-items: center; gap: 8px; }
+.part-head .badge { font-size: 11.5px; font-weight: 800; color: #fff; padding: 1px 8px; border-radius: 8px; }
+.part.p1 .badge { background: var(--accent); }
+.part.p2 .badge { background: var(--accent-2); }
+.part-head span { font-size: 12.5px; color: var(--ink-3); }
+.savebar { position: sticky; bottom: 0; z-index: 5; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 20px; background: rgba(255,255,255,.94); border-top: 1px solid var(--line); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.savebar span { font-size: 13px; color: var(--ink-3); }
+
+/* ───────── Design 2: side menu ───────── */
+.d2 { --accent: #2f86de; --accent-ink: #1f6fc2; --accent-soft: #e6f1fc; --logo-bg: #ffe7c7; display: grid; grid-template-columns: 236px minmax(0, 1fr); min-height: 780px; }
+.d2 .side { background: #fff; border-inline-end: 1px solid var(--line); padding: 16px 12px; display: flex; flex-direction: column; gap: 4px; }
+.d2 .brand { display: flex; align-items: center; gap: 10px; padding: 2px 6px 14px; }
+.d2 .brand b { display: block; font-size: 14.5px; line-height: 1.5; }
+.d2 .brand small { display: block; font-size: 12px; color: var(--ink-3); }
+.d2 .nav { display: flex; flex-direction: column; gap: 2px; }
+.d2 .nav button { display: flex; align-items: center; gap: 10px; border: 0; background: none; border-radius: 11px; padding: 8px 10px; font-weight: 600; font-size: 14px; color: var(--ink-2); text-align: start; }
+.d2 .nav button svg { width: 19px; height: 19px; flex: none; }
+.d2 .nav button span { flex: 1; }
+.d2 .nav button em { font-style: normal; font-size: 11.5px; font-weight: 800; padding: 0 7px; border-radius: 99px; background: #f0eef5; color: var(--ink-2); }
+.d2 .nav button em.warn { background: var(--amber-soft); color: var(--amber); }
+.d2 .nav button em.on { background: var(--ok-soft); color: var(--ok); }
+.d2 .nav button:hover { background: #f6f5fa; }
+.d2 .nav button[aria-current="page"] { background: var(--accent-soft); color: var(--accent-ink); }
+.d2 .nav-sep { height: 1px; background: var(--line); margin: 8px 6px; }
+.d2 .side-foot { margin-top: auto; display: flex; align-items: center; gap: 8px; padding: 12px 6px 0; border-top: 1px solid var(--line); }
+.d2 .side-foot span { flex: 1; font-size: 13px; color: var(--ink-2); }
+.d2 .content { display: flex; flex-direction: column; min-width: 0; }
+.d2 .pagebar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 14px 22px; background: #fff; border-bottom: 1px solid var(--line); }
+.d2 .pagebar h1 { margin: 0; font-size: 18px; font-weight: 800; }
+.d2 .pagebar p { margin: 0; font-size: 12.5px; color: var(--ink-3); }
+.d2 .main { padding: 20px 22px; display: flex; flex-direction: column; gap: 16px; }
+.d2 .card { border-radius: 16px; }
+
+.split { display: grid; grid-template-columns: 330px minmax(0, 1fr); gap: 16px; align-items: stretch; height: 700px; }
+.ulist { display: flex; flex-direction: column; gap: 10px; padding: 14px; }
+.ulist { min-height: 0; }
+.ulist .items { display: flex; flex-direction: column; overflow-y: auto; flex: 1; min-height: 0; margin-inline: -6px; }
+.uitem { display: flex; align-items: center; gap: 10px; padding: 8px 8px; border: 0; background: none; border-radius: 12px; text-align: start; width: 100%; }
+.uitem:hover { background: #f6f5fa; }
+.uitem[aria-current="true"] { background: var(--accent-soft); }
+.uitem .u-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.uitem .u-name { font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 6px; }
+.uitem .u-last { font-size: 12px; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.uitem .u-time { font-size: 11.5px; color: var(--ink-3); white-space: nowrap; align-self: flex-start; padding-top: 3px; }
+.cpane { padding: 0; overflow: hidden; gap: 0; }
+.cpane-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+.cpane-head .grow b { display: block; font-size: 15px; }
+.cpane { min-height: 0; }
+.cpane .convo { flex: 1; border-radius: 0; min-height: 0; }
+.cpane-foot { display: flex; flex-direction: column; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--line); }
+
+.kb-list { display: flex; flex-direction: column; gap: 10px; }
+.kb-item { border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; }
+.kb-item .kb-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.kb-item .kb-top b { flex: 1; font-size: 14.5px; min-width: 120px; }
+.kb-item p { margin: 0; font-size: 13.5px; color: var(--ink-2); white-space: pre-line; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.keys { display: flex; flex-wrap: wrap; gap: 5px; }
+.keys span { font-size: 11.5px; padding: 0 8px; border-radius: 7px; background: #f0eef5; color: var(--ink-2); }
+.side-col { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start; }
+
+.qcol { display: flex; flex-direction: column; gap: 8px; }
+.qrow { display: flex; align-items: center; gap: 6px; }
+.qrow .inp { height: 38px; }
+.qrow.off .inp { color: var(--ink-3); background: #faf9fc; }
+.crow { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 14px; background: #fff; }
+.crow .c-ic { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent-ink); flex: none; }
+.crow .c-ic svg { width: 19px; height: 19px; }
+.crow .c-l { width: 92px; font-weight: 700; font-size: 13.5px; flex: none; }
+.crow.off .c-ic { background: #f0eef5; color: var(--ink-3); }
+.crow.off .inp { background: #faf9fc; color: var(--ink-3); }
+.steps { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; counter-reset: s; }
+.steps li { counter-increment: s; border: 1px solid var(--line); border-radius: 14px; padding: 12px; font-size: 13px; color: var(--ink-2); display: flex; flex-direction: column; gap: 4px; }
+.steps li b { color: var(--ink); font-size: 14px; display: flex; gap: 8px; align-items: center; }
+.steps li b::before { content: counter(s, persian); width: 24px; height: 24px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-ink); display: grid; place-items: center; font-size: 13px; flex: none; }
+.notice { display: flex; gap: 10px; align-items: flex-start; padding: 11px 13px; border-radius: 13px; background: var(--accent-soft); color: var(--accent-ink); font-size: 13px; line-height: 1.8; }
+.notice svg { width: 18px; height: 18px; flex: none; margin-top: 3px; }
+.notice.warn { background: var(--amber-soft); color: var(--amber); }
+.result { border: 1px dashed var(--line); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 8px; background: #fbfafd; }
+.result .why { font-size: 12.5px; color: var(--ink-3); }
+
+.chart-wrap { position: relative; }
+.chart-wrap svg { width: 100%; height: auto; display: block; overflow: visible; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 12px; height: 12px; border-radius: 4px; display: inline-block; }
+.tip { position: absolute; pointer-events: none; background: #23202d; color: #fff; font-size: 12.5px; padding: 6px 10px; border-radius: 10px; white-space: nowrap; transform: translate(-50%, -100%); line-height: 1.7; }
+.toplist { display: flex; flex-direction: column; }
+.toplist div { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 13.5px; }
+.toplist div:last-child { border-bottom: 0; }
+.toplist .q { flex: 1; min-width: 0; }
+.toplist .c { font-weight: 800; font-variant-numeric: tabular-nums; color: var(--ink-2); }
+.una { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 14px; }
+.una .grow b { display: block; font-size: 14.5px; }
+.una .grow small { font-size: 12.5px; color: var(--ink-3); }
+
+/* ───────── Chat preview (the chosen look: blue, white and pale-yellow bubbles) ───────── */
+.drawer { position: fixed; inset: 0; z-index: 40; background: rgba(25, 18, 40, .35); }
+.drawer-card { position: absolute; top: 0; bottom: 0; inset-inline-end: 0; width: min(410px, 100%); background: #fff; display: flex; flex-direction: column; gap: 10px; padding: 14px 14px 16px; box-shadow: 0 0 40px rgba(0,0,0,.25); }
+.drawer-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.drawer-head b { flex: 1; font-size: 15px; }
+.drawer-note { margin: 0; font-size: 12px; color: var(--ink-3); }
+.cp { --c-accent: #2f86de; --c-head: #3390ec; flex: 1; min-height: 0; position: relative; display: flex; flex-direction: column; border-radius: 22px; overflow: hidden; background-color: #cfe0ee; border: 1px solid var(--line); color: #17212b; }
+.cp-head { display: flex; align-items: center; gap: 10px; padding: 9px 10px; background: var(--c-head); color: #fff; }
+.cp-head .cp-av { width: 40px; height: 40px; position: relative; flex: none; }
+.cp-head .cp-av .dot { position: absolute; bottom: 0; inset-inline-start: 0; box-shadow: 0 0 0 2px #fff; width: 10px; height: 10px; background: #3fbf6a; }
+.cp-head .grow b { display: block; font-size: 15.5px; line-height: 1.4; }
+.cp-head .grow small { font-size: 12px; opacity: .85; }
+.cp-ib { width: 34px; height: 34px; border: 0; border-radius: 50%; background: transparent; color: inherit; display: grid; place-items: center; }
+.cp-ib svg { width: 21px; height: 21px; }
+.cp-msgs { flex: 1; min-height: 0; overflow-y: auto; padding: 12px 10px; display: flex; flex-direction: column; gap: 6px; }
+.cp-msg { max-width: 84%; padding: 7px 11px 4px; border-radius: 15px; box-shadow: 0 1px 1.5px rgba(16, 35, 60, .14); font-size: 13.5px; line-height: 1.8; white-space: pre-line; overflow-wrap: anywhere; }
+.cp-msg.user { align-self: flex-start; background: #effdde; border-start-start-radius: 5px; }
+.cp-msg.bot { align-self: flex-end; background: #fff; border-start-end-radius: 5px; }
+.cp-msg .m { display: flex; justify-content: flex-end; gap: 3px; font-size: 10.5px; color: #6f7b8a; }
+.cp-msg.user .m { color: #4f9a53; }
+.cp-msg .m svg { width: 14px; height: 14px; }
+.cp-contacts { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 8px 0 3px; }
+.cp-contact { display: flex; align-items: center; gap: 6px; padding: 6px 8px; border: 1px solid #e1e6eb; border-radius: 11px; background: #fff; font-size: 12px; font-weight: 700; text-align: start; }
+.cp-contact svg { width: 17px; height: 17px; color: var(--c-accent); flex: none; }
+.cp-typing { align-self: flex-end; display: flex; gap: 4px; padding: 11px 13px; border-radius: 15px; background: #fff; }
+.cp-typing i { width: 6px; height: 6px; border-radius: 50%; background: #6f7b8a; animation: blink 1.1s infinite; }
+.cp-typing i:nth-child(2) { animation-delay: .15s; } .cp-typing i:nth-child(3) { animation-delay: .3s; }
+@keyframes blink { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
+.cp-chips { display: flex; gap: 6px; overflow-x: auto; padding: 7px 10px 5px; scrollbar-width: none; }
+.cp-chips::-webkit-scrollbar { display: none; }
+.cp-chip { flex: none; border: 0; background: rgba(255,255,255,.94); color: var(--c-accent); border-radius: 99px; padding: 4px 12px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.cp-comp { display: flex; gap: 7px; align-items: center; padding: 8px 9px; background: #fff; border-top: 1px solid #e1e6eb; }
+.cp-comp input { flex: 1; min-width: 0; height: 40px; border-radius: 20px; border: 1px solid #e1e6eb; background: #f3f5f7; padding-inline: 14px; font-size: 13.5px; }
+.cp-comp input:focus { outline: none; border-color: var(--c-accent); }
+.cp-send { width: 40px; height: 40px; flex: none; border: 0; border-radius: 50%; background: var(--c-accent); color: #fff; display: grid; place-items: center; }
+.cp-send svg { width: 19px; height: 19px; transform: scaleX(-1); }
+.cp-sheet { position: absolute; inset: 0; background: rgba(10, 6, 12, .4); display: flex; align-items: flex-end; z-index: 3; }
+.cp-sheet-card { width: 100%; background: #fff; border-radius: 22px 22px 0 0; padding: 16px 14px 20px; display: flex; flex-direction: column; gap: 8px; }
+.cp-sheet-card b { font-size: 15px; }
+.cp-sheet .cp-contact { padding: 10px; font-size: 13px; }
+.mini-sheet { border-radius: 18px; background: #cfe0ee; padding: 40px 12px 0; border: 1px solid var(--line); }
+.mini-sheet .cp-sheet-card { border-radius: 18px 18px 0 0; box-shadow: 0 -8px 20px -14px rgba(0,0,0,.4); }
+
+@media (max-width: 1100px) {
+  .side-col { grid-template-columns: minmax(0, 1fr); }
+  .split { grid-template-columns: 290px minmax(0, 1fr); }
+}
+@media (max-width: 900px) {
+  .grid2 { grid-template-columns: minmax(0, 1fr); }
+  .d2 { grid-template-columns: minmax(0, 1fr); }
+  .d2 .side { border-inline-end: 0; border-bottom: 1px solid var(--line); padding: 12px; gap: 8px; }
+  .d2 .brand { padding: 0 4px; }
+  .d2 .nav { flex-direction: row; overflow-x: auto; padding-bottom: 4px; }
+  .d2 .nav button { flex: none; }
+  .d2 .nav-sep, .d2 .side-foot { display: none; }
+  .split { grid-template-columns: minmax(0, 1fr); height: auto; }
+  .ulist .items { max-height: 520px; }
+  .cpane .convo { max-height: 60vh; min-height: 260px; }
+  .split[data-open="true"] .ulist, .split[data-open="false"] .cpane { display: none; }
+  .steps { grid-template-columns: minmax(0, 1fr); }
+  .d1 .main, .d2 .main { padding: 14px; }
+  .d1 .top, .d2 .pagebar { padding: 12px 14px; }
+}
+@media (max-width: 900px) { .d2 .pagebar .grow { flex-basis: 100%; } .cpane-head .grow { min-width: 140px; } }
+@media (min-width: 901px) { .back-to-list { display: none !important; } }
+@media (max-width: 520px) {
+  .crow { flex-wrap: wrap; }
+  .crow .c-l { width: auto; flex: 1; }
+  .crow .inp { flex-basis: 100%; }
+}
+@media (prefers-reduced-motion: reduce) { .cp-typing i { animation: none; } .tog, .tog i { transition: none; } }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs><clipPath id="nana-clip"><circle cx="50" cy="50" r="50"/></clipPath></defs>
+  <symbol id="nana" viewBox="0 0 100 100">
+    <g clip-path="url(#nana-clip)">
+      <rect width="100" height="100" fill="#ffe7c7"/>
+      <path d="M14 104 Q16 78 50 76 Q84 78 86 104 Z" fill="#2f86de"/>
+      <path d="M38 76 Q50 86 62 76 L60 72 Q50 78 40 72 Z" fill="#fff" opacity=".55"/>
+      <circle cx="50" cy="19" r="11" fill="#cfc9c4"/>
+      <circle cx="50" cy="47" r="27" fill="#ddd8d3"/>
+      <ellipse cx="50" cy="52" rx="20.5" ry="22.5" fill="#f1c7a3"/>
+      <path d="M29.5 47 Q31 29 50 28 Q69 29 70.5 47 Q62 37 50 38 Q38 37 29.5 47 Z" fill="#ebe7e3"/>
+      <circle cx="36" cy="61" r="3.6" fill="#ee918c" opacity=".55"/>
+      <circle cx="64" cy="61" r="3.6" fill="#ee918c" opacity=".55"/>
+      <g fill="none" stroke="#6b4a3a" stroke-width="1.8" stroke-linecap="round">
+        <circle cx="41.5" cy="53" r="6.4" fill="#fff" fill-opacity=".28"/>
+        <circle cx="58.5" cy="53" r="6.4" fill="#fff" fill-opacity=".28"/>
+        <path d="M47.9 53 h4.2"/><path d="M39 54 Q41.5 51.8 44 54"/><path d="M56 54 Q58.5 51.8 61 54"/>
+        <path d="M44.5 64.5 Q50 69 55.5 64.5" stroke="#8a4636"/>
+      </g>
+      <circle cx="58" cy="15" r="3.2" fill="#2f86de"/>
+    </g>
+  </symbol>
+  <g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M20.5 12a8.5 8.5 0 0 1-12.6 7.4L3.5 20.5l1.1-4.2A8.5 8.5 0 1 1 20.5 12Z"/></symbol>
+    <symbol id="i-wa" viewBox="0 0 24 24"><path d="M20.5 12a8.5 8.5 0 0 1-12.6 7.4L3.5 20.5l1.1-4.2A8.5 8.5 0 1 1 20.5 12Z"/><path d="M9 10.3c.3 2 1.8 3.6 4 4"/></symbol>
+    <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.5a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2.2-2.4 3.6"/><circle cx="12" cy="17" r=".9" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-db" viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7.5" ry="3"/><path d="M4.5 6v12c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3V6"/><path d="M4.5 12c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3"/></symbol>
+    <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2.5 5 13.5h6l-1 8 8-11h-6l1-8Z"/></symbol>
+    <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1.2 1.2"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1.2-1.2"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="4"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="M11 3.5l1.8 4.7 4.7 1.8-4.7 1.8L11 16.5l-1.8-4.7L4.5 10l4.7-1.8Z"/><path d="M18 14.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8Z"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></symbol>
+    <symbol id="i-out" viewBox="0 0 24 24"><path d="M14 4.5h3.5a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H14"/><path d="M10 8l-4 4 4 4M6 12h9"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5"/><path d="M4.5 19.5h15"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4.5 7h15M9.5 7V4.5h5V7M6.5 7l1 13h9l1-13"/></symbol>
+    <symbol id="i-cu" viewBox="0 0 24 24"><path d="m6 15 6-6 6 6"/></symbol>
+    <symbol id="i-cd" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24"><path d="M21 3 3 10.5l7 2.6 2.6 7.4L21 3Z"/><path d="m10 13.1 5-5"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8.5" y="8.5" width="11" height="11" rx="2.5"/><path d="M15.5 8.5V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7.5a2 2 0 0 0 2 2h2.5"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><path d="M5 3.5h3.2l1.9 4.8-2.4 1.5a11 11 0 0 0 6.5 6.5l1.5-2.4 4.8 1.9V19a2 2 0 0 1-2 2A17 17 0 0 1 3 5.5a2 2 0 0 1 2-2Z"/></symbol>
+    <symbol id="i-cam" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-msg" viewBox="0 0 24 24"><path d="M4 4.5h16v11.5H9.5L4 20.5Z"/><path d="M8 9h8M8 12.2h5"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.5 3.5 5.5 3.5 8.5s-1 6-3.5 8.5c-2.5-2.5-3.5-5.5-3.5-8.5s1-6 3.5-8.5Z"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
+    <symbol id="i-ticks" viewBox="0 0 24 24"><path d="m2.5 12.5 4 4 8-9"/><path d="m11.5 15.5 1 1 8-9"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5"/><circle cx="12" cy="8" r=".9" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-save" viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5Z"/><path d="M8 4v5h7V4M8 20v-6h8v6"/></symbol>
+  </g>
+  <symbol id="i-more" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></symbol>
+</svg>
+
+<div class="wrap" dir="rtl">
+  <div class="demobar">
+    <div class="db-txt"><b>دموی پنل مدیریت چت‌بات</b><span>یکی از دو طرح را انتخاب کنید. همه‌ی کاربرها، پیام‌ها و آمار نمونه‌اند.</span></div>
+    <div class="db-seg" role="tablist" aria-label="طرح پنل">
+      <button type="button" role="tab" id="pick1" data-design="1">طرح ۱: ساده، شبیه پنل قبلی</button>
+      <button type="button" role="tab" id="pick2" data-design="2">طرح ۲: کامل، پیشنهاد من</button>
+    </div>
+    <button type="button" class="db-login" id="toLogin">صفحه‌ی ورود</button>
+  </div>
+  <div class="frame" id="frame"></div>
+</div>
+
+<div class="drawer" id="drawer" hidden>
+  <div class="drawer-card" role="dialog" aria-label="پیش‌نمایش صفحه‌ی چت">
+    <div class="drawer-head">
+      <b>پیش‌نمایش صفحه‌ی چت</b>
+      <div class="seg" id="cpOp"></div>
+      <button type="button" class="btn icon" id="cpClose" aria-label="بستن"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="cp" id="cp"></div>
+    <p class="drawer-note">هر تغییری در پنل بدهید همین‌جا دیده می‌شود. سؤال بپرسید تا ببینید ربات از دیتابیس چه جوابی می‌دهد.</p>
+  </div>
+</div>
+<div class="modal" id="modal" hidden></div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+'use strict';
+const FA = '۰۱۲۳۴۵۶۷۸۹';
+const fa = s => String(s).replace(/\d/g, d => FA[d]);
+const en = s => String(s).replace(/[۰-۹]/g, d => FA.indexOf(d)).replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
+const $ = id => document.getElementById(id);
+
+function h(tag, props, ...kids) {
+  const e = document.createElement(tag);
+  if (props) for (const [k, v] of Object.entries(props)) {
+    if (v == null || v === false) continue;
+    if (k === 'class') e.className = v;
+    else if (k === 'text') e.textContent = v;
+    else if (k === 'value') e.value = v;
+    else if (k === 'checked' || k === 'selected') e[k] = !!v;
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
+    else e.setAttribute(k, v === true ? '' : v);
+  }
+  for (const c of kids.flat(3)) if (c != null && c !== false) e.append(c.nodeType ? c : document.createTextNode(c));
+  return e;
+}
+function icon(id) {
+  const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  const u = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+  u.setAttribute('href', '#' + id);
+  s.setAttribute('aria-hidden', 'true');
+  s.setAttribute('class', 'ic');
+  s.append(u);
+  return s;
+}
+function avatarEl() {
+  if (S.avatar) return h('img', { class: 'av', src: S.avatar, alt: '' });
+  const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  s.setAttribute('viewBox', '0 0 100 100');
+  s.setAttribute('class', 'av');
+  const u = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+  u.setAttribute('href', '#nana');
+  s.append(u);
+  return s;
+}
+
+// ───────── Sample data ─────────
+let seed = 11;
+const rnd = () => { seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+const pick = a => a[Math.floor(rnd() * a.length)];
+
+const S = {
+  design: 1, login: false, page: { 1: 'users', 2: 'dash' },
+  filter: 'all', q: '', selected: null, dbTab: 'persona', kbCat: 'all', kbQ: '', avatar: '', prefixAt: 0,
+  settings: {
+    clinic: 'کلینیک دکتر زاهدی',
+    assistant: 'ننه پت',
+    link: 'https://chat.your-domain.com',
+    persona: 'شما ننه پت هستید، دستیار دلسوز و مهربان کلینیک زیبایی دکتر زاهدی.\nبا لحن یک مادربزرگ مهربون و خودمونی جواب بده و از ایموجی مناسب استفاده کن.\nفقط از اطلاعات بخش ۲ جواب بده و هیچ چیزی از خودت نگو.\nاگر جواب در اطلاعات نبود، فقط پیام «جواب پیدا نشد» را بفرست.',
+    welcome: 'سلام {نام} جان، خوش اومدی 🌸\nمن ننه پت‌ام، دستیار کلینیک دکتر زاهدی. هر سؤالی درباره‌ی عمل، مراقبت‌ها، آدرس یا نوبت داری بپرس.',
+    notFound: 'از این موضوع بی‌خبرم عزیزم 🌸 می‌تونی سؤال دیگه‌ای بپرسی، یا از این راه‌ها با پشتیبانی کلینیک در تماس باشی:',
+    phrases: 'قربونت برم، \nالهی بگردم، \nعزیز دلم، ',
+  },
+  contacts: [
+    { id: 'phone', label: 'تماس تلفنی', icon: 'i-phone', on: true, value: '09120000000', ph: 'مثلاً 09120000000' },
+    { id: 'whatsapp', label: 'واتس‌اپ', icon: 'i-wa', on: false, value: '', ph: 'شماره یا لینک واتس‌اپ' },
+    { id: 'instagram', label: 'اینستاگرام', icon: 'i-cam', on: true, value: 'dr.zahedi', ph: 'آیدی پیج، مثلاً dr.zahedi' },
+    { id: 'rubika', label: 'روبیکا', icon: 'i-msg', on: true, value: '@dr.zahedi', ph: 'آیدی یا لینک روبیکا' },
+    { id: 'telegram', label: 'تلگرام', icon: 'i-send', on: false, value: '', ph: 'آیدی یا لینک تلگرام' },
+    { id: 'site', label: 'سایت', icon: 'i-globe', on: false, value: '', ph: 'https://' },
+  ],
+  quick: {
+    op: [['کی می‌تونم دوش بگیرم؟', true], ['ورم و کبودی', true], ['آتل رو کی برمی‌دارن؟', true], ['ورزش بعد از عمل', true], ['آدرس مطب', true], ['تماس با پشتیبانی', true]].map(([text, on]) => ({ text, on })),
+    not: [['قیمت عمل بینی', true], ['آمادگی قبل از عمل', true], ['گرفتن نوبت مشاوره', true], ['آدرس مطب', true], ['ساعت کاری', false], ['تماس با پشتیبانی', true]].map(([text, on]) => ({ text, on })),
+  },
+  kb: [
+    { cat: 'اطلاعات مطب', title: 'آدرس مطب', keys: ['آدرس', 'کجاست', 'نشانی', 'لوکیشن'], a: 'مطب دکتر در اهواز است. (آدرس کامل را اینجا بنویسید.)' },
+    { cat: 'اطلاعات مطب', title: 'ساعت کاری', keys: ['ساعت کاری', 'ساعت', 'تعطیل', 'چه روزهایی'], a: 'شنبه تا چهارشنبه، ساعت ۱۶ تا ۲۰. (نمونه)' },
+    { cat: 'هزینه و نوبت', title: 'قیمت عمل بینی', keys: ['قیمت', 'هزینه', 'تعرفه'], a: 'قیمت عمل بینی ۶۰ میلیون است.' },
+    { cat: 'هزینه و نوبت', title: 'نوبت مشاوره', keys: ['نوبت', 'مشاوره', 'ویزیت', 'رزرو'], a: 'برای نوبت مشاوره به اینستاگرام یا روبیکای کلینیک پیام بده تا همکارهام روز و ساعتش رو هماهنگ کنن.' },
+    { cat: 'قبل از عمل', title: 'آمادگی قبل از عمل', keys: ['قبل از عمل', 'قبل عمل', 'آمادگی', 'ناشتا', 'آسپرین', 'سیگار'], a: 'داروهایی که مصرف می‌کنی رو حتماً به دکتر بگو، آسپرین و مکمل‌ها رو فقط با نظر دکتر قطع کن، سیگار رو کنار بذار و شب قبل از عمل طبق ساعتی که کلینیک می‌گه ناشتا باش. (متن نمونه)' },
+    { cat: 'بعد از عمل', title: 'دوش گرفتن', keys: ['دوش', 'حمام', 'حموم', 'شستن سر'], a: 'تا وقتی آتل روی بینیته، دوش گرفتن از گردن به پایین اشکالی نداره؛ فقط مواظب باش آتل خیس نشه. (متن نمونه)' },
+    { cat: 'بعد از عمل', title: 'ورم و کبودی', keys: ['ورم', 'تورم', 'کبودی', 'پف'], a: 'ورم و کبودی روزهای اول طبیعیه و کم‌کم می‌خوابه. ۴۸ ساعت اول کمپرس سرد بذار و موقع خواب سرت رو بالاتر نگه دار. (متن نمونه)' },
+    { cat: 'بعد از عمل', title: 'برداشتن آتل', keys: ['آتل', 'چسب', 'بخیه'], a: 'آتل و چسب‌ها رو خودت دست نزن. حدود یک هفته بعد از عمل توی مطب برداشته می‌شن. (متن نمونه)' },
+    { cat: 'بعد از عمل', title: 'عینک', keys: ['عینک'], a: 'تا وقتی دکتر اجازه نداده، عینک رو مستقیم روی بینی نذار. (متن نمونه)' },
+    { cat: 'بعد از عمل', title: 'ورزش بعد از عمل', keys: ['ورزش', 'باشگاه', 'شنا'], a: 'پیاده‌روی آروم از روزهای اول خوبه؛ ورزش سنگین و باشگاه رو تا اجازه‌ی دکتر شروع نکن. (متن نمونه)' },
+  ],
+  ai: { on: false, provider: 'gemini', key: '', model: '', base: '' },
+  admins: [{ name: 'مالک', user: 'owner', role: 'مالک (همه‌ی بخش‌ها)', last: 'همین الان' }, { name: 'منشی کلینیک', user: 'monshi', role: 'پشتیبان (فقط گفتگوها)', last: 'دیروز' }],
+  preview: { op: true, msgs: [], typing: false, sheet: false },
+  users: [],
+};
+const CATS = () => [...new Set(S.kb.map(e => e.cat).filter(Boolean))];
+
+// ───────── Answering: search the database, no AI needed ─────────
+const norm = s => en(s).toLowerCase().replace(/[يى]/g, 'ی').replace(/ك/g, 'ک').replace(/[آأإ]/g, 'ا').replace(/ة/g, 'ه')
+  .replace(/[ً-ٰٟـ]/g, '').replace(/[‌‍‎‏]/g, ' ')
+  .replace(/[؟?!.,،؛;:«»"'()[\]\-_/\\]/g, ' ').replace(/\s+/g, ' ').trim();
+const STOP = new Set('از به با در که را رو این اون ان چی چه کی می تا و یا هم برای چند باید بعد قبل عمل من تو شما هست است کنم کنید میشه چطور چجوری چقدر چقدره داره دارم دارید خیلی اگه اگر ولی یه یک ها های بود شد شده کرد کنه لطفا سلام مطب کلینیک'.split(' ').map(norm));
+const words = s => norm(s).split(' ').filter(w => w.length >= 3 && !STOP.has(w));
+const wmatch = (toks, w) => toks.some(t => t === w || (w.length >= 4 && t.startsWith(w)) || (t.length >= 4 && w.startsWith(t)));
+const phraseList = () => S.settings.phrases.split('\n').map(p => p.trim()).filter(Boolean).map(p => p + ' ');
+const activeContacts = () => S.contacts.filter(c => c.on && c.value.trim());
+
+function findAnswer(q, rotate) {
+  const t = norm(q), toks = t.split(' ');
+  let best = null, bestScore = 0;
+  for (const e of S.kb) {
+    let s = 0;
+    for (const k of e.keys || []) { const nk = norm(k); if (nk && t.includes(nk)) s += 5; }
+    for (const w of new Set(words(e.title))) if (wmatch(toks, w)) s += 3;
+    for (const w of new Set(words(e.a))) if (w.length >= 4 && wmatch(toks, w)) s += 1;
+    if (s > bestScore) { best = e; bestScore = s; }
+  }
+  if (best && bestScore >= 5) {
+    const ph = phraseList();
+    const pre = ph.length ? ph[(rotate ? S.prefixAt++ : q.length) % ph.length] : '';
+    return { kind: 'kb', entry: best, text: pre + best.a };
+  }
+  if (/پشتیبان|تماس|شماره|اپراتور/.test(t)) return { kind: 'talk', text: 'حتماً عزیزم. از هر راهی که راحت‌تری با همکارهام در تماس باش:', contacts: true };
+  if (/ممنون|مرسی|سپاس|تشکر/.test(t)) return { kind: 'talk', text: 'خواهش می‌کنم عزیزم. سؤال دیگه‌ای بود بپرس.' };
+  if (/(^| )(سلام|درود)( |$)/.test(t) && toks.length <= 3) return { kind: 'talk', text: 'سلام به روی ماهت! بگو ببینم چه سؤالی داری؟' };
+  return { kind: 'none', text: S.settings.notFound, contacts: true };
+}
+
+function genUsers() {
+  const FIRST = ['سارا', 'مریم', 'زهرا', 'نگین', 'فاطمه', 'الهام', 'نازنین', 'مهسا', 'پریسا', 'ترانه', 'شیما', 'نرگس', 'هانیه', 'آیدا', 'سمیرا', 'لیلا', 'علی', 'رضا', 'حسین', 'امیر', 'محمد', 'کیان'];
+  const LAST = ['محمدی', 'احمدی', 'کریمی', 'رستمی', 'موسوی', 'جعفری', 'حسینی', 'کاظمی', 'نوری', 'عباسی', 'مرادی', 'یوسفی', 'بهرامی', 'صالحی', 'نجفی', 'قاسمی', 'فرهادی', 'شریفی'];
+  const POST = ['کی می‌تونم دوش بگیرم؟', 'ورم صورتم کی می‌خوابه؟', 'آتل رو کی برمی‌دارن؟', 'می‌تونم عینک بزنم؟', 'کی می‌تونم برم باشگاه؟', 'چند روز باید مرخصی بگیرم؟', 'بینیم هنوز گرفته‌ست، طبیعیه؟'];
+  const PRE = ['قیمت عمل بینی چقدره؟', 'آدرس مطب کجاست؟', 'برای نوبت مشاوره چی کار کنم؟', 'قبل از عمل چی کار کنم؟', 'بیمه قبول می‌کنید؟', 'قسطی هم میشه پرداخت کرد؟', 'عمل با بیهوشی کامله؟', 'ساعت کاری مطب چنده؟'];
+  const list = [];
+  for (let i = 0; i < 46; i++) {
+    const op = rnd() < 0.52;
+    const day = i < 4 ? 0 : Math.floor(rnd() * 14);
+    const n = 1 + Math.floor(rnd() * 3), qs = [];
+    while (qs.length < n) { const q = op ? (rnd() < 0.8 ? pick(POST) : pick(PRE)) : pick(PRE); if (!qs.includes(q)) qs.push(q); }
+    const hour = 9 + Math.floor(rnd() * 13), min = Math.floor(rnd() * 60);
+    const msgs = [{ from: 'bot', greet: true }];
+    qs.forEach(q => { const a = findAnswer(q, false); msgs.push({ from: 'user', text: q }, { from: 'bot', text: a.text, una: a.kind === 'none', q }); });
+    list.push({ id: i + 1, name: `${pick(FIRST)} ${pick(LAST)}`, phone: '0912' + String(i + 1).padStart(7, '0'), op, day, hour, min, online: i < 3, msgs, note: '' });
+  }
+  return list.sort((a, b) => a.day - b.day || (b.hour * 60 + b.min) - (a.hour * 60 + a.min));
+}
+S.users = genUsers();
+
+const hm = u => fa(`${u.hour}:${String(u.min).padStart(2, '0')}`);
+const when = u => u.day === 0 ? `امروز ${hm(u)}` : u.day === 1 ? `دیروز ${hm(u)}` : `${fa(u.day)} روز پیش`;
+const firstName = u => u.name.split(' ')[0];
+const greetText = name => S.settings.welcome.replaceAll('{نام}', name);
+const lastQuestion = u => { const m = [...u.msgs].reverse().find(x => x.from === 'user'); return m ? m.text : ''; };
+const pct = (a, b) => b ? Math.round(a * 100 / b) : 0;
+
+function unansweredGroups() {
+  const g = new Map();
+  for (const u of S.users) for (const m of u.msgs) if (m.una && !m.resolved) {
+    const k = norm(m.q);
+    const cur = g.get(k) || { q: m.q, count: 0, last: u };
+    cur.count++;
+    if (u.day < cur.last.day) cur.last = u;
+    g.set(k, cur);
+  }
+  return [...g.values()].sort((a, b) => b.count - a.count);
+}
+function topQuestions() {
+  const g = new Map();
+  for (const u of S.users) for (const m of u.msgs) if (m.from === 'bot' && m.q) {
+    const k = norm(m.q);
+    const cur = g.get(k) || { q: m.q, count: 0, una: m.una && !m.resolved };
+    cur.count++;
+    g.set(k, cur);
+  }
+  return [...g.values()].sort((a, b) => b.count - a.count).slice(0, 7);
+}
+function filteredUsers() {
+  const q = norm(S.q);
+  return S.users.filter(u => (S.filter === 'all' || (S.filter === 'op' && u.op) || (S.filter === 'not' && !u.op) || (S.filter === 'online' && u.online))
+    && (!q || norm(u.name).includes(q) || u.phone.includes(en(S.q).replace(/\s/g, ''))));
+}
+
+// ───────── Small UI pieces ─────────
+let toastTimer = 0;
+function toast(msg) { const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 2800); }
+function openModal(title, body, actions = []) {
+  const m = $('modal');
+  m.replaceChildren(h('div', { class: 'modal-card', role: 'dialog', 'aria-label': title },
+    h('div', { class: 'modal-head' }, h('h3', null, title), h('button', { type: 'button', class: 'btn icon', 'aria-label': 'بستن', onclick: closeModal }, icon('i-x'))),
+    body, actions.length ? h('div', { class: 'row', style: 'justify-content:flex-end' }, actions) : null));
+  m.hidden = false;
+}
+function closeModal() { $('modal').hidden = true; }
+$('modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); $('drawer').hidden = true; } });
+
+const btn = (label, onclick, kind = '', ic = null, props = {}) => h('button', { type: 'button', class: `btn ${kind}`, onclick, ...props }, ic ? icon(ic) : null, label);
+const field = (label, input, hint) => h('label', { class: 'field' }, h('span', { class: 'f-label' }, label), input, hint ? h('span', { class: 'f-hint' }, hint) : null);
+const inp = (value, set, props = {}) => h('input', { class: 'inp', value, oninput: e => { set(e.target.value); refreshPreview(); }, ...props });
+const area = (value, set, rows = 4, props = {}) => h('textarea', { class: 'inp', rows, value, oninput: e => { set(e.target.value); refreshPreview(); }, ...props });
+function toggle(on, set, label) {
+  return h('button', { type: 'button', class: 'tog', role: 'switch', 'aria-checked': String(on), 'aria-label': label, onclick: e => { const v = e.currentTarget.getAttribute('aria-checked') !== 'true'; e.currentTarget.setAttribute('aria-checked', String(v)); set(v); refreshPreview(); } }, h('i'));
+}
+const card = (title, sub, extra, ...body) => h('section', { class: 'card' }, title ? h('div', { class: 'card-head' }, h('div', null, h('h3', null, title), sub ? h('p', { class: 'card-sub' }, sub) : null), extra) : null, ...body);
+const seg = (items, cur, set, label) => h('div', { class: 'seg', role: 'tablist', 'aria-label': label }, items.map(([k, t]) => h('button', { type: 'button', role: 'tab', 'aria-selected': String(cur === k), onclick: () => set(k) }, t)));
+const opPill = u => h('span', { class: `pill ${u.op ? 'op' : 'not'}` }, u.op ? 'عمل‌کرده' : 'عمل‌نکرده');
+const ini = u => h('span', { class: 'ini' }, u.name[0], u.online ? h('i', { class: 'dot' }) : null);
+const saved = () => toast('ذخیره شد');
+function copyText(text, okMsg) {
+  try { navigator.clipboard.writeText(text).then(() => toast(okMsg), () => toast(text)); } catch { toast(text); }
+}
+
+// ───────── Sections ─────────
+function statTiles(withUnanswered) {
+  const U = S.users, total = U.length, online = U.filter(u => u.online).length, op = U.filter(u => u.op).length;
+  const tiles = [
+    ['کل کاربرها', total, 'همه‌ی کسانی که فرم را پر کرده‌اند'],
+    ['آنلاین الان', online, 'در همین لحظه در صفحه‌ی چت', 'on'],
+    ['عمل‌کرده', op, `${fa(pct(op, total))}٪ از کاربرها`],
+    ['عمل‌نکرده', total - op, `${fa(pct(total - op, total))}٪ از کاربرها`],
+    ['کاربر جدید امروز', U.filter(u => u.day === 0).length, 'از ساعت ۰۰:۰۰'],
+  ];
+  if (withUnanswered) tiles.push(['سؤال بی‌جواب', unansweredGroups().length, 'منتظر جواب شما', 'warn']);
+  return h('div', { class: 'tiles' }, tiles.map(([l, n, s, k]) => h('div', { class: `tile ${k || ''}` },
+    h('span', { class: 't-l' }, k === 'on' ? h('i', { class: 'dot' }) : null, l), h('span', { class: 't-n' }, fa(n)), h('span', { class: 't-s' }, s))));
+}
+
+function exportModal(kind) {
+  const rows = S.users.filter(u => kind === 'all' || (kind === 'op' ? u.op : !u.op));
+  const name = { all: 'همه‌ی کاربرها', op: 'عمل‌کرده‌ها', not: 'عمل‌نکرده‌ها' }[kind];
+  openModal(`خروجی اکسل: ${name}`, h('div', { class: 'stack' },
+    h('div', { class: 'notice' }, icon('i-info'), `در نسخه‌ی اصلی فایل ‎.xlsx‎ با ${fa(rows.length)} ردیف دانلود می‌شود. چند ردیف اولش این شکلی است:`),
+    h('div', { class: 'table-wrap' }, h('table', null,
+      h('thead', null, h('tr', null, ['نام', 'موبایل', 'وضعیت عمل', 'اولین ورود'].map(t => h('th', null, t)))),
+      h('tbody', null, rows.slice(0, 6).map(u => h('tr', null, h('td', null, u.name), h('td', { class: 'ltr num' }, u.phone), h('td', null, u.op ? 'عمل‌کرده' : 'عمل‌نکرده'), h('td', null, when(u)))))))),
+    [btn('بستن', closeModal), btn('دانلود اکسل', () => { closeModal(); toast('در نسخه‌ی اصلی فایل دانلود می‌شود.'); }, 'primary', 'i-down')]);
+}
+
+function exportButtons() {
+  return h('div', { class: 'row' },
+    btn('اکسل عمل‌کرده‌ها', () => exportModal('op'), 'soft', 'i-down'),
+    btn('اکسل عمل‌نکرده‌ها', () => exportModal('not'), 'soft', 'i-down'),
+    btn('اکسل همه', () => exportModal('all'), '', 'i-down'));
+}
+
+function userFilters(onChange) {
+  const box = h('div', { class: 'toolbar' },
+    h('div', { class: 'search' }, icon('i-search'), h('input', { class: 'inp', id: 'userSearch', placeholder: 'جست‌وجوی اسم یا شماره', value: S.q, oninput: e => { S.q = e.target.value; onChange(); } })),
+    seg([['all', 'همه'], ['op', 'عمل‌کرده'], ['not', 'عمل‌نکرده'], ['online', 'آنلاین']], S.filter, k => { S.filter = k; box.replaceWith(userFilters(onChange)); onChange(); }, 'فیلتر کاربرها'));
+  return box;
+}
+
+function usersTable() {
+  const tbody = h('tbody');
+  const fill = () => {
+    const list = filteredUsers();
+    tbody.replaceChildren(...(list.length ? list.map(u => h('tr', { onclick: () => openUser(u) },
+      h('td', null, h('span', { class: 'who' }, ini(u), h('b', null, u.name))),
+      h('td', { class: 'ltr num' }, u.phone),
+      h('td', null, opPill(u)),
+      h('td', null, when(u)),
+      h('td', null, u.online ? h('span', { class: 'pill on' }, h('i', { class: 'dot' }), 'آنلاین') : h('span', { class: 'pill mute' }, when(u))),
+      h('td', { class: 'num' }, fa(u.msgs.filter(m => m.from === 'user').length)),
+      h('td', null, btn('نمایش چت', e => { e.stopPropagation(); openUser(u); }, '', 'i-chat')))) : [h('tr', null, h('td', { colspan: 7, class: 'empty' }, 'کاربری با این مشخصات پیدا نشد.'))]));
+  };
+  fill();
+  return card('لیست کاربرها', 'روی هر ردیف بزنید تا گفتگوی آن کاربر را ببینید.', exportButtons(),
+    userFilters(fill),
+    h('div', { class: 'table-wrap tall' }, h('table', null,
+      h('thead', null, h('tr', null, ['نام', 'موبایل', 'وضعیت عمل', 'اولین ورود', 'آخرین فعالیت', 'سؤال‌ها', ''].map(t => h('th', null, t)))),
+      tbody)));
+}
+
+function convoEl(u) {
+  return h('div', { class: 'convo' }, u.msgs.map(m => {
+    if (m.from === 'user') return h('div', { class: 'bub user' }, m.text, h('span', { class: 'b-meta' }, hm(u)));
+    if (m.from === 'staff') return h('div', { class: 'bub staff' }, h('span', { class: 'b-who' }, 'پشتیبان'), m.text, h('span', { class: 'b-meta' }, 'همین الان'));
+    return h('div', { class: 'bub bot' }, m.greet ? greetText(firstName(u)) : m.text,
+      h('span', { class: 'b-meta' }, m.una && !m.resolved ? h('span', { class: 'pill warn' }, 'بی‌جواب') : null, hm(u)));
+  }));
+}
+
+function openUser(u) {
+  if (S.design === 2) { S.selected = u.id; S.page[2] = 'chats'; render(); return; }
+  openModal(`گفتگوی ${u.name}`, h('div', { class: 'stack' },
+    h('div', { class: 'row' }, opPill(u), h('span', { class: 'ltr num' }, u.phone), u.online ? h('span', { class: 'pill on' }, h('i', { class: 'dot' }), 'آنلاین') : h('span', { class: 'pill mute' }, when(u))),
+    convoEl(u)), [btn('کپی شماره', () => copyText(u.phone, 'شماره کپی شد'), '', 'i-copy'), btn('بستن', closeModal, 'primary')]);
+}
+
+function personaFields() {
+  const st = S.settings;
+  return [
+    field('نقش و لحن (برای هوش مصنوعی)', area(st.persona, v => { st.persona = v; }, 6), 'فقط وقتی هوش مصنوعی روشن باشد خوانده می‌شود.'),
+    field('پیام خوش‌آمد', area(st.welcome, v => { st.welcome = v; }, 3), '{نام} جای اسم مراجعه‌کننده می‌نشیند.'),
+    field('پیام وقتی جواب پیدا نشد', area(st.notFound, v => { st.notFound = v; }, 3), 'زیر این پیام، راه‌های تماسِ روشن نشان داده می‌شود.'),
+    field('جمله‌های محبت‌آمیز اول جواب', area(st.phrases, v => { st.phrases = v; }, 3), 'هر خط یک جمله. بدون هوش مصنوعی، ربات یکی از این‌ها را اول جواب می‌گذارد.'),
+  ];
+}
+
+const kbToText = () => S.kb.map(e => `${e.title}: ${e.a}`).join('\n\n');
+function textToKb(text) {
+  const old = new Map(S.kb.map(e => [norm(e.title), e]));
+  return text.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean).map(p => {
+    const lines = p.split('\n'), first = lines[0], i = first.indexOf(':');
+    const title = (i > 0 ? first.slice(0, i) : first).trim();
+    const a = [i > 0 ? first.slice(i + 1).trim() : '', ...lines.slice(1)].filter(Boolean).join('\n') || title;
+    const prev = old.get(norm(title));
+    return { cat: prev ? prev.cat : '', title, keys: prev ? prev.keys : [], a };
+  });
+}
+
+function tester() {
+  const out = h('div', { class: 'result' }, h('span', { class: 'why' }, 'یک سؤال بنویسید تا ببینید ربات با دیتابیس فعلی چه جوابی می‌دهد.'));
+  const input = h('input', { class: 'inp grow', id: 'testQ', placeholder: 'مثلاً: بیمه قبول می‌کنید؟' });
+  const run = q => {
+    q = (q || input.value).trim();
+    if (!q) return;
+    input.value = q;
+    const a = findAnswer(q, true);
+    const why = a.kind === 'kb' ? `جواب از موضوع «${a.entry.title}» آمد.` : a.kind === 'talk' ? 'جواب آماده‌ی خود ربات (سلام، تشکر یا درخواست تماس).' : 'در دیتابیس پیدا نشد؛ پیام «جواب پیدا نشد» و راه‌های تماس نشان داده می‌شود. این سؤال به «سؤال‌های بی‌جواب» اضافه می‌شود.';
+    out.replaceChildren(h('div', { class: 'bub bot', style: 'align-self:stretch;max-width:none' }, a.text), h('span', { class: 'why' }, why));
+  };
+  return card('امتحان ربات', 'جوابی که مراجعه‌کننده می‌بیند، همین‌جا.', null,
+    h('form', { class: 'row', onsubmit: e => { e.preventDefault(); run(); } }, input, h('button', { type: 'submit', class: 'btn primary' }, 'بپرس')),
+    h('div', { class: 'row' }, ['قیمت عمل بینی چقدره؟', 'آدرس مطب کجاست؟', 'کی می‌تونم دوش بگیرم؟', 'بیمه قبول می‌کنید؟'].map(q => btn(q, () => run(q)))),
+    out);
+}
+
+function brandFields() {
+  const st = S.settings;
+  const prev = h('span', { class: 'logo big' }, avatarEl());
+  const file = h('input', { type: 'file', accept: 'image/*', id: 'avatarFile', hidden: true, onchange: e => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = () => { S.avatar = String(r.result); render(); refreshPreview(); };
+    r.readAsDataURL(f);
+  } });
+  return [
+    field('اسم کلینیک یا دکتر', inp(st.clinic, v => { st.clinic = v; })),
+    field('اسم دستیار (ربات)', inp(st.assistant, v => { st.assistant = v; })),
+    h('div', { class: 'field' }, h('span', { class: 'f-label' }, 'عکس پروفایل صفحه‌ی چت'),
+      h('div', { class: 'row' }, prev, file, btn('انتخاب عکس', () => file.click(), '', 'i-user'), S.avatar ? btn('برگشت به نقاشی ننه', () => { S.avatar = ''; render(); refreshPreview(); }, 'danger') : null),
+      h('span', { class: 'f-hint' }, 'در دمو عکس فقط روی همین صفحه نشان داده می‌شود و جایی فرستاده نمی‌شود.')),
+    field('لینک صفحه‌ی چت', h('div', { class: 'row' }, h('input', { class: 'inp grow ltr', value: st.link, readonly: true }), btn('کپی', () => copyText(st.link, 'لینک کپی شد'), '', 'i-copy')), 'آدرس واقعی بعد از ساختن ساب‌دامین در Cloudflare اینجا می‌آید. همین لینک را در بیو اینستاگرام بگذارید.'),
+  ];
+}
+
+function contactRows() {
+  const box = h('div', { class: 'stack', style: 'gap:8px' });
+  const fill = () => box.replaceChildren(...S.contacts.map(c => h('div', { class: `crow ${c.on ? '' : 'off'}` },
+    h('span', { class: 'c-ic' }, icon(c.icon)), h('span', { class: 'c-l' }, c.label),
+    toggle(c.on, v => { c.on = v; fill(); }, `${c.label} روشن باشد`),
+    h('input', { class: 'inp grow ltr', value: c.value, placeholder: c.ph, 'aria-label': c.label, oninput: e => { c.value = e.target.value; refreshPreview(); } }))));
+  fill();
+  return [box, h('span', { class: 'f-hint' }, 'راهی که خاموش باشد یا خالی بماند، در صفحه‌ی چت نشان داده نمی‌شود.')];
+}
+
+function quickCols() {
+  const col = (key, title) => {
+    const box = h('div', { class: 'qcol' });
+    const list = S.quick[key];
+    const fill = () => {
+      const add = h('input', { class: 'inp grow', placeholder: 'پیام آماده‌ی جدید', 'aria-label': 'پیام آماده‌ی جدید' });
+      box.replaceChildren(h('b', null, title), ...list.map((q, i) => h('div', { class: `qrow ${q.on ? '' : 'off'}` },
+        h('button', { type: 'button', class: 'btn icon', 'aria-label': 'بالاتر', disabled: i === 0, onclick: () => { [list[i - 1], list[i]] = [list[i], list[i - 1]]; fill(); refreshPreview(); } }, icon('i-cu')),
+        h('button', { type: 'button', class: 'btn icon', 'aria-label': 'پایین‌تر', disabled: i === list.length - 1, onclick: () => { [list[i + 1], list[i]] = [list[i], list[i + 1]]; fill(); refreshPreview(); } }, icon('i-cd')),
+        h('input', { class: 'inp grow', value: q.text, 'aria-label': 'متن پیام آماده', oninput: e => { q.text = e.target.value; refreshPreview(); } }),
+        toggle(q.on, v => { q.on = v; fill(); }, 'نمایش این پیام'),
+        h('button', { type: 'button', class: 'btn icon danger', 'aria-label': 'حذف', onclick: () => { list.splice(i, 1); fill(); refreshPreview(); } }, icon('i-trash')))),
+      h('form', { class: 'qrow', onsubmit: e => { e.preventDefault(); if (add.value.trim()) { list.push({ text: add.value.trim(), on: true }); fill(); refreshPreview(); } } }, add, h('button', { type: 'submit', class: 'btn' }, icon('i-plus'), 'افزودن')));
+    };
+    fill();
+    return box;
+  };
+  return h('div', { class: 'grid2' }, col('op', 'برای کسانی که عمل کرده‌اند'), col('not', 'برای کسانی که هنوز عمل نکرده‌اند'));
+}
+
+const PROVIDERS = [['gemini', 'Gemini (گوگل)'], ['grok', 'Grok'], ['openai', 'OpenAI'], ['custom', 'سرویس سازگار با OpenAI (مثلاً واسط ایرانی)']];
+function aiFields(withSteps) {
+  const ai = S.ai;
+  const result = h('div', { class: 'result', hidden: true });
+  const baseField = field('آدرس سرویس (Base URL)', inp(ai.base, v => { ai.base = v; }, { class: 'inp ltr', placeholder: 'https://…/v1' }));
+  baseField.hidden = ai.provider !== 'custom';
+  return [
+    withSteps ? h('ol', { class: 'steps' },
+      h('li', null, h('b', null, 'سؤال مراجعه‌کننده'), 'مثلاً «کی می‌تونم دوش بگیرم؟»'),
+      h('li', null, h('b', null, 'گشتن در دیتابیس'), 'بدون هوش مصنوعی: نزدیک‌ترین موضوع پیدا و همان متن فرستاده می‌شود. با هوش مصنوعی: سؤال و اطلاعات بخش ۲ به هوش مصنوعی داده می‌شود تا فقط از همان‌ها با لحن ننه جواب بدهد.'),
+      h('li', null, h('b', null, 'جواب یا ارجاع'), 'اگر جوابی نبود، پیام «جواب پیدا نشد» و راه‌های تماس نشان داده می‌شود.')) : null,
+    h('div', { class: 'row' }, toggle(ai.on, v => { ai.on = v; }, 'استفاده از هوش مصنوعی'), h('b', null, 'استفاده از هوش مصنوعی'), h('span', { class: 'f-hint' }, '(خاموش هم باشد ربات کار می‌کند)')),
+    h('div', { class: 'grid2' },
+      field('سرویس', h('select', { class: 'inp', onchange: e => { ai.provider = e.target.value; baseField.hidden = ai.provider !== 'custom'; } }, PROVIDERS.map(([k, t]) => h('option', { value: k, selected: ai.provider === k }, t)))),
+      field('اسم مدل', inp(ai.model, v => { ai.model = v; }, { class: 'inp ltr', placeholder: 'طبق سایت سرویس‌دهنده' })),
+      field('کلید API', inp(ai.key, v => { ai.key = v; }, { class: 'inp ltr', type: 'password', placeholder: 'کلید را اینجا بچسبانید', autocomplete: 'off' })),
+      baseField),
+    h('div', { class: 'row' }, btn('تست اتصال', () => {
+      result.hidden = false;
+      result.replaceChildren(ai.key.trim()
+        ? h('span', null, 'در دمو اتصال واقعی انجام نمی‌شود. در نسخه‌ی اصلی، اینجا دلیل دقیق نوشته می‌شود؛ مثلاً «وصل شد»، «کلید اشتباه است»، «سهمیه‌ی رایگان تمام شده» یا «این سرویس به IP این سرور جواب نمی‌دهد».')
+        : h('span', null, 'اول کلید API را وارد کنید.'));
+    }, '', 'i-spark')),
+    result,
+    h('div', { class: 'notice' }, icon('i-info'), 'اگر هوش مصنوعی خطا بدهد، کند باشد یا قطع شود، ربات خودش از دیتابیس جواب می‌دهد و مراجعه‌کننده هیچ خطایی نمی‌بیند.'),
+  ];
+}
+
+function passwordFields() {
+  return [h('div', { class: 'grid2' },
+    field('رمز فعلی', h('input', { class: 'inp ltr', type: 'password', autocomplete: 'current-password' })),
+    field('رمز جدید', h('input', { class: 'inp ltr', type: 'password', autocomplete: 'new-password' }), 'حداقل ۸ حرف')),
+  h('div', { class: 'row' }, btn('تغییر رمز', () => toast('رمز عوض شد (در دمو فقط نمایشی است).'), 'primary', 'i-lock'))];
+}
+
+// Two series over 14 days: who joined each day, split by surgery status.
+function chart14() {
+  const days = Array.from({ length: 14 }, (_, i) => 13 - i);
+  const data = days.map(d => ({ d, op: S.users.filter(u => u.day === d && u.op).length, not: S.users.filter(u => u.day === d && !u.op).length }));
+  const max = Math.max(2, ...data.map(x => x.op + x.not));
+  const top = Math.ceil(max / 2) * 2;
+  const W = 640, H = 230, L = 30, R = 8, T = 10, B = 30, cw = (W - L - R) / data.length, bw = Math.min(26, cw * 0.56);
+  const y = v => T + (H - T - B) * (1 - v / top);
+  const ns = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(ns, 'svg');
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.setAttribute('role', 'img');
+  svg.setAttribute('aria-label', 'نمودار کاربرهای جدید ۱۴ روز اخیر');
+  svg.style.direction = 'ltr';
+  const add = (tag, attrs, text) => { const e = document.createElementNS(ns, tag); for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v); if (text != null) e.textContent = text; svg.append(e); return e; };
+  for (let v = 0; v <= top; v += top / 2) {
+    add('line', { x1: L, x2: W - R, y1: y(v), y2: y(v), stroke: '#ebe9f1', 'stroke-width': 1 });
+    add('text', { x: L - 8, y: y(v) + 4, 'text-anchor': 'end', 'font-size': 11, fill: '#8a8699', 'font-family': 'Vazirmatn, Tahoma, sans-serif' }, fa(v));
+  }
+  const wrap = h('div', { class: 'chart-wrap' });
+  const tip = h('div', { class: 'tip', hidden: true });
+  const bar = (x, y0, y1, color, roundTop) => {
+    const hgt = y0 - y1;
+    if (hgt <= 0) return;
+    const r = roundTop ? Math.min(4, hgt) : 0;
+    add('path', { d: `M${x},${y0} V${y1 + r} Q${x},${y1} ${x + r},${y1} H${x + bw - r} Q${x + bw},${y1} ${x + bw},${y1 + r} V${y0} Z`, fill: color });
+  };
+  data.forEach((v, i) => {
+    const x = L + i * cw + (cw - bw) / 2, base = y(0);
+    const yOp = y(v.op), yAll = y(v.op + v.not);
+    bar(x, base, yOp, 'var(--accent)', v.not === 0);
+    if (v.not) bar(x, yOp - (v.op ? 2 : 0), yAll, 'var(--s-not)', true);
+    if (i % 2 === 1 || v.d === 0) add('text', { x: x + bw / 2, y: H - 8, 'text-anchor': 'middle', direction: 'rtl', 'unicode-bidi': 'embed', 'font-size': 11, fill: '#8a8699', 'font-family': 'Vazirmatn, Tahoma, sans-serif' }, v.d === 0 ? 'امروز' : `${fa(20 - v.d)} مهر`);
+    const hit = add('rect', { x: L + i * cw, y: T, width: cw, height: H - T - B, fill: 'transparent' });
+    const label = v.d === 0 ? 'امروز' : `${fa(20 - v.d)} مهر`;
+    const show = () => {
+      tip.hidden = false;
+      tip.textContent = `${label}: ${fa(v.op)} عمل‌کرده، ${fa(v.not)} عمل‌نکرده`;
+      const r = wrap.getBoundingClientRect(), s = svg.getBoundingClientRect();
+      tip.style.left = `${(x + bw / 2) / W * s.width + (s.left - r.left)}px`;
+      tip.style.top = `${yAll / H * s.height - 6}px`;
+    };
+    hit.addEventListener('mouseenter', show);
+    hit.addEventListener('click', show);
+    hit.addEventListener('mouseleave', () => { tip.hidden = true; });
+  });
+  const totOp = data.reduce((n, v) => n + v.op, 0), totNot = data.reduce((n, v) => n + v.not, 0);
+  wrap.append(svg, tip);
+  return card('کاربرهای جدید، ۱۴ روز اخیر', 'روی هر ستون بروید تا عددش را ببینید.', null,
+    h('div', { class: 'legend' }, h('span', null, h('i', { style: 'background:var(--accent)' }), `عمل‌کرده: ${fa(totOp)}`), h('span', null, h('i', { style: 'background:var(--s-not)' }), `عمل‌نکرده: ${fa(totNot)}`)),
+    wrap);
+}
+
+function answerModal(q) {
+  const e = { cat: 'بعد از عمل', title: q.replace(/[؟?]/g, '').trim(), keys: [], a: '' };
+  const keys = h('input', { class: 'inp', placeholder: 'با «،» جدا کنید؛ مثلاً بیمه، بیمه تکمیلی' });
+  const ans = h('textarea', { class: 'inp', rows: 4, placeholder: 'جوابی که ربات باید بدهد' });
+  const title = h('input', { class: 'inp', value: e.title });
+  const cat = h('input', { class: 'inp', value: e.cat, list: 'catList' });
+  openModal(q ? 'افزودن جواب به دیتابیس' : 'موضوع جدید', h('div', { class: 'stack' },
+    h('datalist', { id: 'catList' }, CATS().map(c => h('option', { value: c }))),
+    h('div', { class: 'grid2' }, field('موضوع', title), field('دسته', cat)),
+    field('کلمه‌های مشابه (اختیاری)', keys, 'کلمه‌هایی که مردم برای همین موضوع می‌نویسند. پیدا کردن جواب را دقیق‌تر می‌کند.'),
+    field('جواب', ans)),
+    [btn('انصراف', closeModal), btn('ذخیره در دیتابیس', () => {
+      if (!title.value.trim() || !ans.value.trim()) { toast('موضوع و جواب را بنویسید.'); return; }
+      S.kb.push({ cat: cat.value.trim(), title: title.value.trim(), keys: keys.value.split(/[،,]/).map(s => s.trim()).filter(Boolean), a: ans.value.trim() });
+      if (q) for (const u of S.users) for (const m of u.msgs) if (m.una && norm(m.q) === norm(q)) m.resolved = true;
+      closeModal(); render(); toast('به دیتابیس اضافه شد');
+    }, 'primary', 'i-save')]);
+}
+
+function kbEntries() {
+  const list = h('div', { class: 'kb-list' });
+  const fill = () => {
+    const q = norm(S.kbQ);
+    const items = S.kb.filter(e => (S.kbCat === 'all' || e.cat === S.kbCat) && (!q || norm(e.title + ' ' + e.a + ' ' + e.keys.join(' ')).includes(q)));
+    list.replaceChildren(...(items.length ? items.map(e => h('div', { class: 'kb-item' },
+      h('div', { class: 'kb-top' }, e.cat ? h('span', { class: 'pill op' }, e.cat) : null, h('b', null, e.title),
+        h('button', { type: 'button', class: 'btn icon', 'aria-label': 'ویرایش', onclick: () => editEntry(e) }, icon('i-edit')),
+        h('button', { type: 'button', class: 'btn icon danger', 'aria-label': 'حذف', onclick: () => { S.kb.splice(S.kb.indexOf(e), 1); fill(); toast('حذف شد'); } }, icon('i-trash'))),
+      h('p', null, e.a),
+      e.keys.length ? h('div', { class: 'keys' }, e.keys.map(k => h('span', null, k))) : null)) : [h('div', { class: 'empty' }, 'موضوعی پیدا نشد.')]));
+  };
+  fill();
+  const cats = h('div', { class: 'seg' });
+  const fillCats = () => cats.replaceChildren(...[['all', 'همه'], ...CATS().map(c => [c, c])].map(([k, t]) => h('button', { type: 'button', 'aria-selected': String(S.kbCat === k), onclick: () => { S.kbCat = k; fillCats(); fill(); } }, t)));
+  fillCats();
+  return card('اطلاعات کلینیک', 'هر موضوع جدا، مثل آدرس، قیمت و مراقبت‌ها. جواب‌های پزشکی این دمو نمونه‌اند.', btn('موضوع جدید', () => answerModal(''), 'primary', 'i-plus'),
+    h('div', { class: 'toolbar' }, h('div', { class: 'search' }, icon('i-search'), h('input', { class: 'inp', placeholder: 'جست‌وجو در دیتابیس', value: S.kbQ, oninput: e => { S.kbQ = e.target.value; fill(); } })), cats),
+    list);
+}
+function editEntry(e) {
+  const title = h('input', { class: 'inp', value: e.title }), cat = h('input', { class: 'inp', value: e.cat, list: 'catList' });
+  const keys = h('input', { class: 'inp', value: e.keys.join('، ') }), ans = h('textarea', { class: 'inp', rows: 5, value: e.a });
+  openModal('ویرایش موضوع', h('div', { class: 'stack' }, h('datalist', { id: 'catList' }, CATS().map(c => h('option', { value: c }))),
+    h('div', { class: 'grid2' }, field('موضوع', title), field('دسته', cat)), field('کلمه‌های مشابه', keys), field('جواب', ans)),
+    [btn('انصراف', closeModal), btn('ذخیره', () => { Object.assign(e, { title: title.value.trim(), cat: cat.value.trim(), keys: keys.value.split(/[،,]/).map(s => s.trim()).filter(Boolean), a: ans.value.trim() }); closeModal(); render(); saved(); }, 'primary', 'i-save')]);
+}
+
+// ───────── Design 1 ─────────
+function design1() {
+  const tabs = [['users', 'لیست کاربرها و آمار'], ['db', 'دیتابیس ربات'], ['settings', 'تنظیمات و راه‌های ارتباطی']];
+  const page = S.page[1];
+  let body;
+  if (page === 'users') body = [h('h2', { class: 'page-title' }, 'آمار'), statTiles(false), usersTable()];
+  else if (page === 'db') body = [
+    card('پیکربندی ربات: شخصیت و اطلاعات کلینیک', 'دیتابیس دو بخش دارد: بخش ۱ می‌گوید ربات چطور حرف بزند، بخش ۲ می‌گوید چه بداند.', null,
+      h('div', { class: 'grid2' },
+        h('div', { class: 'part p1' }, h('div', { class: 'part-head' }, h('b', null, h('span', { class: 'badge' }, 'بخش ۱'), 'نقش، شخصیت و لحن دستیار'), h('span', null, 'اسم، لحن، پیام خوش‌آمد و پیام وقتی جواب پیدا نشد')), personaFields()),
+        h('div', { class: 'part p2' }, h('div', { class: 'part-head' }, h('b', null, h('span', { class: 'badge' }, 'بخش ۲'), 'بانک اطلاعات کلینیک'), h('span', null, 'آدرس، قیمت، ساعت کاری، مراقبت‌ها و سؤال‌های پرتکرار')),
+          field('اطلاعات', area(kbToText(), v => { S.kb = textToKb(v); }, 22), 'هر موضوع یک پاراگراف؛ بین موضوع‌ها یک خط خالی. اول اسم موضوع، بعد دونقطه و متن. مثل: «آدرس مطب: اهواز، خیابان …». جواب‌های پزشکی این دمو نمونه‌اند.')))),
+    tester()];
+  else body = [
+    h('div', { class: 'grid2' },
+      card('هویت و برند', null, null, ...brandFields()),
+      card('لینک‌ها و راه‌های ارتباطی', 'در منوی سه‌نقطه‌ی صفحه‌ی چت و زیر پیام «جواب پیدا نشد» نشان داده می‌شوند.', null, ...contactRows())),
+    card('پیام‌های آماده (دکمه‌های پایین صفحه‌ی چت)', 'بسته به جواب «عمل کرده‌ای یا نه؟» فهرست جدا نشان داده می‌شود. ترتیب، روشن/خاموش و متن را عوض کنید.', null, quickCols()),
+    h('div', { class: 'grid2' },
+      card('اتصال هوش مصنوعی (اختیاری)', 'بدون آن هم ربات از دیتابیس جواب می‌دهد.', null, ...aiFields(false)),
+      card('رمز عبور پنل', null, null, ...passwordFields()))];
+  return h('div', { class: 'd1' },
+    h('header', { class: 'top' },
+      h('span', { class: 'logo' }, 'د'),
+      h('h1', null, `پنل مدیریت ${S.settings.clinic}`),
+      h('span', { class: 'pill on' }, h('i', { class: 'dot' }), 'آنلاین'),
+      btn('پیش‌نمایش چت', openPreview, 'soft', 'i-eye'),
+      h('button', { type: 'button', class: 'logout', onclick: () => { S.login = true; render(); } }, 'خروج')),
+    h('nav', { class: 'tabs', role: 'tablist', 'aria-label': 'بخش‌های پنل' }, tabs.map(([k, t]) => h('button', { type: 'button', role: 'tab', 'aria-selected': String(page === k), onclick: () => { S.page[1] = k; render(); } }, t))),
+    h('main', { class: 'main' }, body),
+    page !== 'users' ? h('div', { class: 'savebar' }, h('span', null, 'تغییرها بعد از ذخیره، همان لحظه در صفحه‌ی چت اعمال می‌شوند.'), btn('ذخیره‌ی تغییرات', saved, 'primary', 'i-save')) : null);
+}
+
+// ───────── Design 2 ─────────
+const NAV2 = [
+  ['dash', 'داشبورد', 'i-grid', 'خلاصه‌ی وضعیت چت‌بات'],
+  ['chats', 'گفتگوها', 'i-chat', 'کاربرها و گفتگوهایشان؛ از همین‌جا می‌توانید خودتان جواب بدهید'],
+  ['unanswered', 'سؤال‌های بی‌جواب', 'i-help', 'سؤال‌هایی که ربات جوابشان را در دیتابیس پیدا نکرد'],
+  'sep',
+  ['db', 'دیتابیس ربات', 'i-db', 'بخش ۱ شخصیت ربات است و بخش ۲ اطلاعات کلینیک'],
+  ['quick', 'پیام‌های آماده', 'i-bolt', 'دکمه‌های آماده‌ی پایین صفحه‌ی چت'],
+  ['contacts', 'راه‌های ارتباطی', 'i-link', 'تلفن، واتس‌اپ، اینستاگرام، روبیکا و…'],
+  ['brand', 'ظاهر و برند', 'i-user', 'اسم‌ها، عکس پروفایل و لینک صفحه‌ی چت'],
+  ['ai', 'هوش مصنوعی', 'i-spark', 'اختیاری؛ بدون آن هم ربات کار می‌کند'],
+  ['security', 'مدیران و امنیت', 'i-lock', 'رمز عبور، حساب منشی و پشتیبان‌گیری'],
+];
+
+function chatsPage() {
+  const list = filteredUsers();
+  const sel = S.users.find(u => u.id === S.selected);
+  const items = h('div', { class: 'items' });
+  const fillItems = () => items.replaceChildren(...(filteredUsers().map(u => h('button', { type: 'button', class: 'uitem', 'aria-current': String(u.id === S.selected), onclick: () => { S.selected = u.id; render(); } },
+    ini(u), h('span', { class: 'u-txt' }, h('span', { class: 'u-name' }, u.name, opPill(u)), h('span', { class: 'u-last' }, lastQuestion(u))), h('span', { class: 'u-time' }, u.online ? 'آنلاین' : when(u))))));
+  fillItems();
+  const left = h('section', { class: 'card ulist' }, userFilters(fillItems), h('div', { class: 'row' }, btn('خروجی اکسل', () => openModal('خروجی اکسل', h('p', { class: 'card-sub' }, 'کدام فهرست؟'), [btn('عمل‌کرده‌ها', () => exportModal('op'), 'soft'), btn('عمل‌نکرده‌ها', () => exportModal('not'), 'soft'), btn('همه', () => exportModal('all'))]), 'soft', 'i-down')), items);
+  let right;
+  if (!sel) right = h('section', { class: 'card cpane' }, h('div', { class: 'empty', style: 'margin:auto' }, list.length ? 'یک کاربر را از فهرست انتخاب کنید.' : ''));
+  else {
+    const reply = h('input', { class: 'inp grow', placeholder: `جواب شما به ${firstName(sel)}…`, 'aria-label': 'جواب پشتیبان' });
+    right = h('section', { class: 'card cpane' },
+      h('div', { class: 'cpane-head' },
+        h('button', { type: 'button', class: 'btn icon back-to-list', 'aria-label': 'برگشت به فهرست', onclick: () => { S.selected = null; render(); } }, icon('i-back')),
+        ini(sel), h('div', { class: 'grow' }, h('b', null, sel.name), h('span', { class: 'ltr num' }, sel.phone)),
+        opPill(sel), sel.online ? h('span', { class: 'pill on' }, h('i', { class: 'dot' }), 'آنلاین') : h('span', { class: 'pill mute' }, when(sel)),
+        btn('کپی شماره', () => copyText(sel.phone, 'شماره کپی شد'), '', 'i-copy')),
+      convoEl(sel),
+      h('div', { class: 'cpane-foot' },
+        h('form', { class: 'row', onsubmit: e => { e.preventDefault(); if (!reply.value.trim()) return; sel.msgs.push({ from: 'staff', text: reply.value.trim() }); render(); toast('در نسخه‌ی اصلی، این پیام همان لحظه در صفحه‌ی چتِ کاربر دیده می‌شود.'); } },
+          reply, h('button', { type: 'submit', class: 'btn primary' }, icon('i-send'), 'فرستادن')),
+        field('یادداشت پشتیبان (فقط برای شما)', h('input', { class: 'inp', value: sel.note, placeholder: 'مثلاً: برای مشاوره‌ی شنبه هماهنگ شد', oninput: e => { sel.note = e.target.value; } }))));
+  }
+  return h('div', { class: 'split', 'data-open': String(!!sel) }, left, right);
+}
+
+function unansweredPage() {
+  const groups = unansweredGroups();
+  return card(`${fa(groups.length)} سؤال بی‌جواب`, 'برای هر سؤال جواب بنویسید تا به دیتابیس اضافه شود؛ دفعه‌ی بعد ربات خودش جواب می‌دهد.', null,
+    groups.length ? h('div', { class: 'stack', style: 'gap:8px' }, groups.map(g => h('div', { class: 'una' },
+      h('div', { class: 'grow' }, h('b', null, g.q), h('small', null, `${fa(g.count)} بار پرسیده شده؛ آخرین بار ${g.last.name}، ${when(g.last)}`)),
+      btn('نادیده بگیر', () => { for (const u of S.users) for (const m of u.msgs) if (m.una && norm(m.q) === norm(g.q)) m.resolved = true; render(); toast('از فهرست برداشته شد'); }),
+      btn('نوشتن جواب', () => answerModal(g.q), 'primary', 'i-plus')))) : h('div', { class: 'empty' }, 'سؤال بی‌جوابی نمانده.'));
+}
+
+function design2() {
+  const page = S.page[2];
+  const meta = NAV2.find(n => n !== 'sep' && n[0] === page);
+  const online = S.users.filter(u => u.online).length, una = unansweredGroups().length;
+  let body;
+  switch (page) {
+    case 'dash': body = [statTiles(true),
+      h('div', { class: 'side-col' }, chart14(),
+        card('پرتکرارترین سؤال‌ها', null, null, h('div', { class: 'toplist' }, topQuestions().map(t => h('div', null, h('span', { class: 'q' }, t.q), t.una ? h('span', { class: 'pill warn' }, 'بی‌جواب') : null, h('span', { class: 'c' }, fa(t.count))))))),
+      card('آخرین کاربرها', null, btn('همه‌ی گفتگوها', () => { S.page[2] = 'chats'; render(); }, 'soft'),
+        h('div', { class: 'table-wrap' }, h('table', null, h('thead', null, h('tr', null, ['نام', 'موبایل', 'وضعیت عمل', 'ورود', 'آخرین سؤال'].map(t => h('th', null, t)))),
+          h('tbody', null, S.users.slice(0, 6).map(u => h('tr', { onclick: () => openUser(u) }, h('td', null, h('span', { class: 'who' }, ini(u), h('b', null, u.name))), h('td', { class: 'ltr num' }, u.phone), h('td', null, opPill(u)), h('td', null, when(u)), h('td', null, lastQuestion(u))))))))];
+      break;
+    case 'chats': body = [chatsPage()]; break;
+    case 'unanswered': body = [unansweredPage()]; break;
+    case 'db': body = [seg([['persona', 'بخش ۱: شخصیت ربات'], ['info', 'بخش ۲: اطلاعات کلینیک']], S.dbTab, k => { S.dbTab = k; render(); }, 'بخش دیتابیس'),
+      h('div', { class: 'side-col' },
+        S.dbTab === 'persona' ? card('شخصیت و لحن ربات', 'ربات چطور حرف بزند.', btn('ذخیره', saved, 'primary', 'i-save'), ...personaFields()) : kbEntries(),
+        tester())];
+      break;
+    case 'quick': body = [card('پیام‌های آماده', 'بسته به جواب «عمل کرده‌ای یا نه؟» فهرست جدا نشان داده می‌شود.', btn('ذخیره', saved, 'primary', 'i-save'), quickCols())]; break;
+    case 'contacts': body = [h('div', { class: 'side-col' },
+      card('راه‌های ارتباطی', 'روشن و خاموش کنید، شماره یا لینک بدهید.', btn('ذخیره', saved, 'primary', 'i-save'), ...contactRows()),
+      card('منوی سه‌نقطه در صفحه‌ی چت', 'با هر تغییر به‌روز می‌شود.', null, miniSheet()))];
+      break;
+    case 'brand': body = [card('ظاهر و برند', null, btn('ذخیره', saved, 'primary', 'i-save'), h('div', { class: 'grid2' }, ...brandFields()))]; break;
+    case 'ai': body = [card('اتصال هوش مصنوعی (اختیاری)', 'ربات چطور جواب می‌دهد:', btn('ذخیره', saved, 'primary', 'i-save'), ...aiFields(true))]; break;
+    default: body = [h('div', { class: 'grid2' },
+      card('رمز عبور', null, null, ...passwordFields()),
+      card('پشتیبان‌گیری', 'هر شب خودکار یک نسخه روی سرور ذخیره می‌شود.', null, h('div', { class: 'row' }, btn('دانلود پشتیبان کامل', () => toast('در نسخه‌ی اصلی یک فایل zip با همه‌ی اطلاعات دانلود می‌شود.'), 'soft', 'i-down')))),
+      card('حساب‌های پنل', 'منشی فقط گفتگوها را می‌بیند و به تنظیمات دسترسی ندارد.', btn('حساب جدید', () => toast('در نسخه‌ی اصلی فرم ساخت حساب باز می‌شود.'), 'primary', 'i-plus'),
+        h('div', { class: 'table-wrap' }, h('table', null, h('thead', null, h('tr', null, ['اسم', 'نام کاربری', 'دسترسی', 'آخرین ورود'].map(t => h('th', null, t)))),
+          h('tbody', null, S.admins.map(a => h('tr', null, h('td', null, a.name), h('td', { class: 'ltr' }, a.user), h('td', null, a.role), h('td', null, a.last)))))))];
+  }
+  return h('div', { class: 'd2' },
+    h('aside', { class: 'side' },
+      h('div', { class: 'brand' }, h('span', { class: 'logo' }, avatarEl()), h('div', null, h('b', null, S.settings.assistant), h('small', null, S.settings.clinic))),
+      h('nav', { class: 'nav', 'aria-label': 'بخش‌های پنل' }, NAV2.map(n => n === 'sep' ? h('div', { class: 'nav-sep' }) :
+        h('button', { type: 'button', 'aria-current': page === n[0] ? 'page' : null, onclick: () => { S.page[2] = n[0]; render(); } }, icon(n[2]), h('span', null, n[1]),
+          n[0] === 'chats' ? h('em', { class: 'on' }, fa(online)) : n[0] === 'unanswered' && una ? h('em', { class: 'warn' }, fa(una)) : null))),
+      h('div', { class: 'side-foot' }, h('span', null, 'مالک'), btn('خروج', () => { S.login = true; render(); }, 'danger', 'i-out'))),
+    h('div', { class: 'content' },
+      h('header', { class: 'pagebar' }, h('div', { class: 'grow' }, h('h1', null, meta[1]), h('p', null, meta[3])),
+        h('span', { class: 'pill on' }, h('i', { class: 'dot' }), `${fa(online)} نفر آنلاین`),
+        btn('پیش‌نمایش چت', openPreview, 'soft', 'i-eye')),
+      h('main', { class: 'main' }, body)));
+}
+
+function miniSheet() {
+  const list = activeContacts();
+  return h('div', { class: 'mini-sheet', id: 'miniSheet' }, h('div', { class: 'cp-sheet-card' }, h('b', null, 'راه‌های تماس با کلینیک'),
+    list.length ? h('div', { class: 'cp-contacts' }, list.map(c => h('span', { class: 'cp-contact' }, icon(c.icon), c.label))) : h('span', { class: 'f-hint' }, 'هیچ راه تماسی روشن نیست.')));
+}
+
+function loginView() {
+  const d = S.design === 1 ? 'd1' : 'd2';
+  return h('div', { class: d, style: 'display:block' }, h('div', { class: 'login' },
+    h('form', { class: 'login-card', onsubmit: e => { e.preventDefault(); S.login = false; render(); } },
+      h('span', { class: 'logo big' }, S.design === 1 ? 'د' : avatarEl()),
+      h('h2', null, 'ورود به پنل مدیریت'), h('p', null, S.settings.clinic),
+      field('نام کاربری', h('input', { class: 'inp ltr', id: 'loginUser', value: 'owner', autocomplete: 'username' })),
+      field('رمز عبور', h('input', { class: 'inp ltr', id: 'loginPass', type: 'password', value: 'demo-password', autocomplete: 'current-password' })),
+      h('button', { type: 'submit', class: 'btn primary wide' }, 'ورود'),
+      h('p', { class: 'login-note' }, 'بعد از چند بار رمز اشتباه، ورود برای ۱۵ دقیقه بسته می‌شود.'))));
+}
+
+function render() {
+  const frame = $('frame');
+  const y = window.scrollY;
+  frame.replaceChildren(S.login ? loginView() : S.design === 1 ? design1() : design2());
+  for (const b of document.querySelectorAll('.db-seg button')) b.setAttribute('aria-selected', String(Number(b.dataset.design) === S.design));
+  $('toLogin').textContent = S.login ? 'برگشت به پنل' : 'صفحه‌ی ورود';
+  window.scrollTo(0, y);
+  if (!$('drawer').hidden) renderPreview();
+}
+
+// ───────── Chat preview ─────────
+const PATTERN = `url("data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="150" height="150" viewBox="0 0 150 150" fill="none" stroke="#8fb2cf" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" opacity=".55"><path d="M22 20l2.8 5.8 6.2.9-4.5 4.3 1.1 6.2L22 34.3l-5.6 2.9 1.1-6.2-4.5-4.3 6.2-.9z"/><path d="M104 22c0-4 6-4 6 0 0-4 6-4 6 0 0 4.5-6 8-6 8s-6-3.5-6-8z"/><circle cx="70" cy="66" r="6"/><path d="M26 98c4-5 10-5 14 0"/><path d="M120 84v10M115 89h10"/><path d="M64 124l4 4 8-8"/><circle cx="132" cy="134" r="2.4"/><path d="M50 36h9"/><path d="M96 112c3-3 3-7 0-10"/><circle cx="12" cy="136" r="3.5"/></svg>')}")`;
+const nowT = () => { const d = new Date(); return fa(`${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`); };
+function cpContacts() {
+  const list = activeContacts();
+  if (!list.length) return h('span', { class: 'f-hint' }, 'هیچ راه تماسی روشن نیست.');
+  return h('div', { class: 'cp-contacts' }, list.map(c => h('button', { type: 'button', class: 'cp-contact', onclick: () => toast(`${c.label}: ${c.value}`) }, icon(c.icon), c.label)));
+}
+function renderPreview() {
+  const P = S.preview, cp = $('cp');
+  $('cpOp').replaceWith(Object.assign(seg([['yes', 'عمل کرده'], ['no', 'عمل نکرده']], P.op ? 'yes' : 'no', k => { P.op = k === 'yes'; resetPreview(); }, 'مراجعه‌کننده‌ی نمونه'), { id: 'cpOp' }));
+  cp.style.backgroundImage = PATTERN;
+  const msgs = h('div', { class: 'cp-msgs' }, P.msgs.map(m => h('div', { class: `cp-msg ${m.from}` },
+    m.greet ? greetText('سارا') : m.text,
+    m.contacts ? cpContacts() : null,
+    h('span', { class: 'm' }, m.t, m.from === 'user' ? icon('i-ticks') : null))),
+    P.typing ? h('div', { class: 'cp-typing' }, h('i'), h('i'), h('i')) : null);
+  const input = h('input', { id: 'cpInput', placeholder: 'سؤالت رو بنویس…', 'aria-label': 'پیام', autocomplete: 'off' });
+  const ask = text => {
+    text = text.trim();
+    if (!text || P.typing) return;
+    P.msgs.push({ from: 'user', text, t: nowT() });
+    P.typing = true;
+    renderPreview();
+    setTimeout(() => { P.typing = false; const a = findAnswer(text, true); P.msgs.push({ from: 'bot', text: a.text, contacts: a.contacts, t: nowT() }); renderPreview(); }, 700);
+  };
+  cp.replaceChildren(...[
+    h('div', { class: 'cp-head' }, h('span', { class: 'cp-av' }, avatarEl(), h('i', { class: 'dot' })),
+      h('div', { class: 'grow' }, h('b', null, S.settings.assistant), h('small', null, P.typing ? 'داره می‌نویسه…' : 'آنلاین')),
+      h('button', { type: 'button', class: 'cp-ib', 'aria-label': 'راه‌های تماس', onclick: () => { P.sheet = true; renderPreview(); } }, icon('i-more'))),
+    msgs,
+    h('div', { class: 'cp-chips' }, S.quick[P.op ? 'op' : 'not'].filter(q => q.on && q.text.trim()).map(q => h('button', { type: 'button', class: 'cp-chip', onclick: () => ask(q.text) }, q.text))),
+    h('form', { class: 'cp-comp', onsubmit: e => { e.preventDefault(); ask(input.value); input.value = ''; } }, input, h('button', { type: 'submit', class: 'cp-send', 'aria-label': 'فرستادن' }, icon('i-send'))),
+    P.sheet ? h('div', { class: 'cp-sheet', onclick: e => { if (e.target.classList.contains('cp-sheet')) { P.sheet = false; renderPreview(); } } },
+      h('div', { class: 'cp-sheet-card' }, h('b', null, 'راه‌های تماس با کلینیک'), cpContacts())) : null].filter(Boolean));
+  msgs.scrollTop = msgs.scrollHeight;
+}
+function resetPreview() { S.preview.msgs = [{ from: 'bot', greet: true, t: nowT() }]; S.preview.typing = false; S.preview.sheet = false; S.prefixAt = 0; renderPreview(); }
+function openPreview() { $('drawer').hidden = false; if (!S.preview.msgs.length) resetPreview(); else renderPreview(); }
+function refreshPreview() {
+  if (!$('drawer').hidden) renderPreview();
+  const ms = $('miniSheet');
+  if (ms) ms.replaceWith(miniSheet());
+}
+$('cpClose').addEventListener('click', () => { $('drawer').hidden = true; });
+$('drawer').addEventListener('click', e => { if (e.target.id === 'drawer') $('drawer').hidden = true; });
+
+for (const b of document.querySelectorAll('.db-seg button')) b.addEventListener('click', () => { S.design = Number(b.dataset.design); S.login = false; render(); });
+$('toLogin').addEventListener('click', () => { S.login = !S.login; render(); });
+
+// Hook for screenshots.
+window.demo = { go(design, page, extra) { S.design = design; S.login = page === 'login'; if (!S.login) S.page[design] = page; if (extra) Object.assign(S, extra); render(); }, preview: openPreview };
+render();
+</script>

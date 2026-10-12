@@ -1,0 +1,89 @@
+# Clinic support chat. Managed by install.sh; settings come from .env next to this file.
+# Profile "tunnel" (default): a Cloudflare tunnel. It connects out to Cloudflare, so no port is opened on
+#   the server at all; the chat itself is reachable only inside this compose network.
+# Profile "direct": Caddy answers on port 443 only, with a free Let's Encrypt certificate (Cloudflare DNS
+#   record with the proxy turned off). Only for a server whose port 443 is free. Port 80 is never used.
+# Nothing outside this folder is used, apart from port 443 in direct mode.
+name: chat-poshtibani
+
+services:
+  chat:
+    build: ./app
+    image: chat-poshtibani:latest
+    container_name: chat-poshtibani
+    restart: unless-stopped
+    user: "${CHAT_UID:-1000}:${CHAT_GID:-1000}"
+    environment:
+      DATA_DIR: /data
+      TRUST_PROXY: ${TRUST_PROXY:-proxy}
+      COOKIE_SECURE: "true"
+      PUBLIC_URL: ${PUBLIC_URL:-}
+      OWNER_USERNAME: ${OWNER_USERNAME:-owner}
+      OWNER_PASSWORD: ${OWNER_PASSWORD:-}
+      OWNER_DISPLAY_NAME: ${OWNER_DISPLAY_NAME:-مالک}
+      BACKUP_KEEP: ${BACKUP_KEEP:-60}
+    # Port 3000 is reachable only by the tunnel or Caddy on this network; nothing is published on the host.
+    expose:
+      - "3000"
+    volumes:
+      - ./data:/data
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    mem_limit: 256m
+    networks:
+      - chat
+
+  tunnel:
+    image: cloudflare/cloudflared:2026.9.3
+    container_name: chat-poshtibani-tunnel
+    profiles: ["tunnel"]
+    restart: unless-stopped
+    user: "${CF_USER:-65532:65532}"
+    environment:
+      HOME: /home/nonroot
+    command: tunnel --no-autoupdate --config /home/nonroot/.cloudflared/config.yml run
+    volumes:
+      - ./cloudflared:/home/nonroot/.cloudflared:ro
+    depends_on:
+      chat:
+        condition: service_healthy
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - chat
+
+  caddy:
+    image: caddy:2.11.4-alpine
+    container_name: chat-poshtibani-caddy
+    profiles: ["direct"]
+    restart: unless-stopped
+    user: "${CADDY_USER:-0:0}"
+    environment:
+      CHAT_HOST: ${CHAT_HOST:-localhost}
+    ports:
+      - "443:443"
+    volumes:
+      - ./app/deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./caddy/data:/data
+      - ./caddy/config:/config
+    depends_on:
+      chat:
+        condition: service_healthy
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    networks:
+      - chat
+
+networks:
+  chat:
+    name: chat-poshtibani
