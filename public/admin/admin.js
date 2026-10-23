@@ -503,17 +503,33 @@ async function refreshStats() {
 
 // ───────── Routing: #/page or #/page/arg ─────────
 let current = null; // { page, arg }
-let pageCtx = null; // per page: { onArg, onStats, onLeave, dirty }
+let pageCtx = null; // per page: { onArg, onStats, onLeave, dirty, save }
 const alive = ctx => ctx === pageCtx;
 const pageDirty = () => Boolean(pageCtx?.dirty?.());
 const hashOf = r => `#/${r.page}${r.arg ? `/${r.arg}` : ''}`;
-const confirmLeave = () => confirmModal({
-  title: 'تغییرها ذخیره نشده‌اند',
-  message: 'تغییرهای این صفحه هنوز ذخیره نشده‌اند. اگر بروید، از بین می‌روند.',
-  ok: 'رفتن بدون ذخیره',
-  cancel: 'ماندن',
-  danger: true,
-});
+// Leaving a page with unsaved edits: save and go, go without saving, or stay. Resolves true to leave.
+function confirmLeave() {
+  return new Promise(resolve => {
+    let answer = 'stay';
+    const pick = a => () => { answer = a; closeModal(); };
+    const stay = btn('ماندن', pick('stay'));
+    const drop = btn('رفتن بدون ذخیره', pick('drop'), 'danger');
+    const save = pageCtx?.save ? btn('ذخیره و رفتن', pick('save'), 'primary', 'i-save') : null;
+    openModal({
+      title: 'تغییرها ذخیره نشده‌اند',
+      body: h('p', { class: 'modal-text', text: 'تغییرهای این صفحه هنوز ذخیره نشده‌اند. می‌خواهید ذخیره شوند؟' }),
+      actions: [stay, drop, save].filter(Boolean),
+      narrow: true,
+      onClose: async () => {
+        if (answer === 'save') {
+          await pageCtx.save();
+          resolve(!pageDirty()); // a failed save leaves its error on the page and keeps the user there
+        } else resolve(answer === 'drop');
+      },
+    });
+    (save || stay).focus();
+  });
+}
 
 function parseHash() {
   const [page = '', arg = ''] = location.hash.replace(/^#\/?/, '').split('/');
@@ -552,7 +568,7 @@ function show(next) {
   pageCtx?.onLeave?.();
   stopPolls('page');
   current = next;
-  const ctx = pageCtx = { onArg: null, onStats: null, onLeave: null, dirty: null };
+  const ctx = pageCtx = { onArg: null, onStats: null, onLeave: null, dirty: null, save: null };
   const page = PAGES[next.page];
   for (const [key, a] of Object.entries(shell.links)) {
     if (key === next.page) a.setAttribute('aria-current', 'page');
@@ -1077,6 +1093,13 @@ async function renderDb(main, _arg, ctx) {
     field('جمله‌های محبت‌آمیز اول جواب', inputs.phrases, 'هر خط یک جمله. ربات به نوبت یکی از این‌ها را اول جواب‌های دیتابیس می‌گذارد.'),
     field('نقش و لحن', inputs.persona, 'فعلاً استفاده نمی‌شود؛ اگر بعداً هوش مصنوعی اضافه شد، همین متن به آن داده می‌شود.'));
   ctx.dirty = () => owner && Object.keys(inputs).some(k => inputs[k].value !== saved[k]);
+  // Part 1 can have unsaved edits while part 2 is shown: saving shows part 1, so any error is visible.
+  ctx.save = async () => {
+    state.dbTab = 'persona';
+    tabs.replaceWith(tabs = makeTabs());
+    drawTab();
+    await savePersona();
+  };
 
   async function savePersona() {
     personaError.hidden = true;
@@ -1154,10 +1177,11 @@ async function renderDb(main, _arg, ctx) {
     }
   }
 
-  const tabs = seg([['persona', 'بخش ۱: شخصیت ربات'], ['info', 'بخش ۲: اطلاعات کلینیک']], state.dbTab, key => {
+  const makeTabs = () => seg([['persona', 'بخش ۱: شخصیت ربات'], ['info', 'بخش ۲: اطلاعات کلینیک']], state.dbTab, key => {
     state.dbTab = key;
     drawTab();
   }, 'بخش‌های دیتابیس');
+  let tabs = makeTabs();
   // Both parts stay in the page, so switching between them keeps unsaved edits.
   const drawTab = () => {
     personaCard.hidden = state.dbTab !== 'persona';
@@ -1211,6 +1235,7 @@ async function renderQuick(main, _arg, ctx) {
   const lists = { op: data.op.map(q => ({ text: q.text, enabled: q.enabled })), not: data.not.map(q => ({ text: q.text, enabled: q.enabled })) };
   let saved = JSON.stringify(lists);
   ctx.dirty = () => JSON.stringify(lists) !== saved;
+  ctx.save = () => save();
   const error = formError();
   const saveBtn = btn('ذخیره', save, 'primary', 'i-save');
 
@@ -1308,6 +1333,7 @@ async function renderContacts(main, _arg, ctx) {
   let rows = res.contacts.map(c => ({ id: c.id, label: c.label, enabled: c.enabled, value: c.value }));
   let saved = JSON.stringify(rows);
   ctx.dirty = () => JSON.stringify(rows) !== saved;
+  ctx.save = () => save();
   const error = formError();
   const saveBtn = btn('ذخیره', save, 'primary', 'i-save');
   const box = h('div', { class: 'stack tight' });
@@ -1365,6 +1391,7 @@ async function renderBrand(main, _arg, ctx) {
   const clinic = h('input', { class: 'inp', maxlength: '80', value: s.clinicName });
   const assistant = h('input', { class: 'inp', maxlength: '40', value: s.assistantName });
   ctx.dirty = () => clinic.value !== saved.clinicName || assistant.value !== saved.assistantName;
+  ctx.save = () => save();
   const error = formError();
   const saveBtn = btn('ذخیره', save, 'primary', 'i-save');
 
