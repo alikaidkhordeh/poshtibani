@@ -335,3 +335,6 @@ h1, h2, p { margin: 0; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
+
+/* Links inside clinic answers */
+.msg-link { color: #1f6fc2; text-decoration: underline; text-underline-offset: 2px; overflow-wrap: anywhere; unicode-bidi: isolate; }

@@ -326,6 +326,30 @@ function metaRow(at, status) {
   return row;
 }
 
+// Clinic answers may contain https links (Rubika, Instagram, …) and phone numbers: they become real links.
+// Built with text nodes only, so nothing in the text is ever parsed as markup.
+const LINKABLE = /(https?:\/\/[^\s<>"'،]+[^\s<>"'،.,!?؟:؛)])|((?:\+98|0)9\d{9}|0\d{10})/g;
+function linkify(text) {
+  const parts = [];
+  let last = 0;
+  for (const m of text.matchAll(LINKABLE)) {
+    if (m.index > last) parts.push(document.createTextNode(text.slice(last, m.index)));
+    const a = el('a', 'msg-link', m[0]);
+    a.dir = 'ltr';
+    if (m[1]) {
+      a.href = m[1];
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+    } else {
+      a.href = `tel:${m[2]}`;
+    }
+    parts.push(a);
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) parts.push(document.createTextNode(text.slice(last)));
+  return parts;
+}
+
 function bubble({ id, from, text, contacts, at }, status) {
   const mine = from === 'visitor';
   const node = el('div', `msg ${mine ? 'user' : 'bot'}${from === 'staff' ? ' staff' : ''}${status === 'pending' ? ' pending' : ''}`);
@@ -333,7 +357,9 @@ function bubble({ id, from, text, contacts, at }, status) {
   node.dataset.at = String(at);
   if (from === 'staff') node.append(el('span', 'who', STAFF_LABEL));
   else node.append(el('span', 'sr-only', mine ? 'شما: ' : `${state.config.assistantName}: `));
-  const p = el('p', null, String(text ?? ''));
+  const p = el('p');
+  if (mine) p.textContent = String(text ?? '');
+  else p.append(...linkify(String(text ?? '')));
   p.dir = 'auto';
   node.append(p);
   if (contacts) node.append(contactGrid());
