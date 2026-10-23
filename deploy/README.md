@@ -68,7 +68,10 @@ mkdir -p ~/chat-poshtibani && cd ~/chat-poshtibani && read -rsp "GitHub token: "
    - لینک صفحه‌ی چت: `https://chat.enetvip.com`
    - لینک پنل مدیریت: `https://chat.enetvip.com/admin`
    - نام کاربری مالک (`owner`) و رمز اولیه (فقط بار اول). رمز را یادداشت کنید.
-     اگر گمش کردید: `grep OWNER_PASSWORD= ~/chat-poshtibani/.env`
+     اگر رمز را گم کردید، رمز فعلی (حتی اگر در پنل عوضش کرده باشید) در این فایل است:
+   `cat ~/chat-poshtibani/data/login-info.txt`
+   اگر آن‌جا هم نبود، یک رمز تازه بسازید:
+   `docker exec chat-poshtibani node --disable-warning=ExperimentalWarning /app/source/deploy/reset-password.mjs`
    - چند دستور مفید (همان جدول پایین این صفحه).
 
 اگر `error: 401` یا `404` دیدید، کلید اشتباه است، تاریخش گذشته، یا `poshtibani` در آن انتخاب نشده.

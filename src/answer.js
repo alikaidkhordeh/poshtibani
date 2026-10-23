@@ -39,7 +39,8 @@ const MIN_SCORE = 5;
 function score(entry, norm, tokens) {
   let total = 0;
   for (const k of new Set(splitKeywords(entry.keywords).map(normalize).filter(Boolean))) {
-    if (norm.includes(k)) total += 5;
+    // At the start of a word, so «ورم» matches «ورمم» but not «بخورم».
+    if (` ${norm}`.includes(` ${k}`)) total += 5;
   }
   for (const w of new Set(words(entry.title))) {
     if (wmatch(tokens, w)) total += 3;
@@ -51,33 +52,43 @@ function score(entry, norm, tokens) {
 }
 
 const TALK = [
-  { test: norm => /پشتیبان|تماس|شماره|اپراتور/.test(norm), text: 'حتماً عزیزم. از هر راهی که راحت‌تری با همکارهام در تماس باش:', contacts: true },
-  { test: norm => /ممنون|مرسی|سپاس|تشکر/.test(norm), text: 'خواهش می‌کنم عزیزم. سؤال دیگه‌ای بود بپرس.', contacts: false },
+  { test: norm => /پشتیبان|تماس|شماره|اپراتور/.test(norm), text: 'حتماً عزیزم 🌸 از هر راهی که برات راحت‌تره با همکارهام در تماس باش:', contacts: true },
+  { test: norm => /ممنون|مرسی|سپاس|تشکر|دستت درد نکنه/.test(norm), text: 'خواهش می‌کنم عزیزم 🌸 سؤال دیگه‌ای داشتی، همین‌جا بپرس.', contacts: false },
   {
-    test: (norm, tokens) => /(^| )(سلام|درود)( |$)/.test(norm) && tokens.length <= 3,
-    text: 'سلام به روی ماهت! بگو ببینم چه سؤالی داری؟',
+    test: (norm, tokens) => /(^| )(سلام|درود|خوبی|چطوری|خسته نباشید)( |$)/.test(norm) && tokens.length <= 4,
+    text: 'سلام به روی ماهت 🌸 من خوبم، تو خوبی؟ بگو ببینم چه سؤالی داری.',
     contacts: false,
   },
 ];
 
-// entries: [{ id, title, keywords, answer }] in priority order; phrases: the stored newline-separated text.
-// prefixIndex rotates the affectionate phrase put before each answer.
+// Topics in this category (greetings, small talk) answer only when no real topic matches, and never get a phrase.
+export const SMALL_TALK_CATEGORY = 'احوالپرسی';
+
+// entries: [{ id, title, keywords, answer, category? }] in priority order; phrases: the stored newline-separated
+// text. Every other answer (even prefixIndex) starts with one of the phrases, in turn, so they do not repeat
+// on every message.
 export function findAnswer({ entries, phrases, notFound, text, prefixIndex = 0 }) {
   const norm = normalize(text);
   const tokens = norm.split(' ');
-  let best = null;
-  let bestScore = 0;
-  for (const entry of entries) {
-    const s = norm ? score(entry, norm, tokens) : 0;
-    if (s > bestScore) {
-      best = entry;
-      bestScore = s;
+  const pick = list => {
+    let best = null;
+    let bestScore = 0;
+    for (const entry of list) {
+      const s = norm ? score(entry, norm, tokens) : 0;
+      if (s > bestScore) {
+        best = entry;
+        bestScore = s;
+      }
     }
-  }
-  if (best && bestScore >= MIN_SCORE) {
+    return bestScore >= MIN_SCORE ? best : null;
+  };
+  const isTalk = e => String(e.category ?? '').trim() === SMALL_TALK_CATEGORY;
+  const topic = pick(entries.filter(e => !isTalk(e)));
+  const best = topic || pick(entries.filter(isTalk));
+  if (best) {
     const list = String(phrases ?? '').split('\n').map(p => p.trim()).filter(Boolean);
     const index = Math.abs(Math.trunc(Number(prefixIndex) || 0));
-    const phrase = list.length ? `${list[index % list.length]} ` : '';
+    const phrase = topic && list.length && index % 2 === 0 ? `${list[(index / 2) % list.length]} ` : '';
     return { kind: 'kb', text: phrase + best.answer, contacts: false, entryId: best.id, entryTitle: best.title };
   }
   const rule = TALK.find(r => r.test(norm, tokens));

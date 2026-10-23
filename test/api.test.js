@@ -269,14 +269,14 @@ test('send: answers from the database, rotating phrases, built-in replies and th
   assert.ok(answer.id > question.id);
 
   r = await v1.post('/api/chat/send', { text: 'قیمت عمل بینی چقدره' });
-  assert.equal(r.data.messages[1].text, 'الهی بگردم، قیمت عمل بینی ۶۰ میلیون است.');
+  assert.equal(r.data.messages[1].text, 'قیمت عمل بینی ۶۰ میلیون است.', 'every other answer has no phrase');
 
   r = await v1.post('/api/chat/send', { text: 'سلام' });
-  assert.equal(r.data.messages[1].text, 'سلام به روی ماهت! بگو ببینم چه سؤالی داری؟');
+  assert.equal(r.data.messages[1].text, 'سلام به روی ماهت 🌸 من خوبم، تو خوبی؟ بگو ببینم چه سؤالی داری.');
   r = await v1.post('/api/chat/send', { text: 'تماس با پشتیبانی' });
   assert.equal(r.data.messages[1].contacts, true);
   r = await v1.post('/api/chat/send', { text: 'ادرس' });
-  assert.equal(r.data.messages[1].text, 'عزیز دلم، مطب دکتر در اهواز است.', 'built-in replies do not move the rotation');
+  assert.equal(r.data.messages[1].text, 'الهی بگردم، مطب دکتر در اهواز است.', 'built-in replies do not move the rotation');
 
   r = await v1.post('/api/chat/send', { text: 'بیمه قبول می‌کنید؟' });
   assert.equal(r.data.messages[1].text, DEFAULT_SETTINGS.not_found);

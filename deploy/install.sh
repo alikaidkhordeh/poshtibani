@@ -175,7 +175,8 @@ ENV
     note "این رمز را یادداشت کنید و بعد از اولین ورود، در پنل مدیریت ← «مدیران و امنیت» رمز خودتان را بگذارید."
     envset OWNER_PASSWORD_SHOWN 1
   fi
-  note "اگر رمز اولیه‌ی مالک را گم کردید:   grep OWNER_PASSWORD= $DIR/.env"
+  note "اگر رمز را گم کردید (همیشه رمز فعلی):  cat $DIR/data/login-info.txt"
+  note "ساختن رمز تازه برای مالک:            docker exec chat-poshtibani node --disable-warning=ExperimentalWarning /app/source/deploy/reset-password.mjs"
   note "دیدن وضعیت:                       cd $DIR && docker compose ps"
   note "دیدن خطاها:                       cd $DIR && docker compose logs --tail 60"
   note "خاموش کردن موقت / روشن کردن:      cd $DIR && docker compose stop   /   cd $DIR && docker compose start"

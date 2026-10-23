@@ -60,16 +60,16 @@ test('nothing in the database: the not-found message with the contact buttons', 
 });
 
 test('built-in replies: greeting, thanks and asking for a person, in that order of priority', () => {
-  assert.deepEqual(ask('سلام'), { kind: 'talk', text: 'سلام به روی ماهت! بگو ببینم چه سؤالی داری؟', contacts: false });
+  assert.deepEqual(ask('سلام'), { kind: 'talk', text: 'سلام به روی ماهت 🌸 من خوبم، تو خوبی؟ بگو ببینم چه سؤالی داری.', contacts: false });
   assert.equal(ask('سلام خوبی؟').kind, 'talk');
   assert.equal(ask('درود').kind, 'talk');
   assert.equal(ask('سلام وقت شما بخیر عزیزم').kind, 'none', 'a greeting with more than 3 words is a question');
   assert.equal(ask('سلامتی').kind, 'none', 'سلام must be a whole word');
-  assert.deepEqual(ask('ممنون'), { kind: 'talk', text: 'خواهش می‌کنم عزیزم. سؤال دیگه‌ای بود بپرس.', contacts: false });
+  assert.deepEqual(ask('ممنون'), { kind: 'talk', text: 'خواهش می‌کنم عزیزم 🌸 سؤال دیگه‌ای داشتی، همین‌جا بپرس.', contacts: false });
   assert.equal(ask('مرسی از راهنماییتون').kind, 'talk');
-  assert.deepEqual(ask('تماس با پشتیبانی'), { kind: 'talk', text: 'حتماً عزیزم. از هر راهی که راحت‌تری با همکارهام در تماس باش:', contacts: true });
+  assert.deepEqual(ask('تماس با پشتیبانی'), { kind: 'talk', text: 'حتماً عزیزم 🌸 از هر راهی که برات راحت‌تره با همکارهام در تماس باش:', contacts: true });
   assert.equal(ask('شماره اپراتور').contacts, true);
-  assert.equal(ask('سلام، ممنون').text, 'خواهش می‌کنم عزیزم. سؤال دیگه‌ای بود بپرس.', 'thanks wins over the greeting');
+  assert.equal(ask('سلام، ممنون').text, 'خواهش می‌کنم عزیزم 🌸 سؤال دیگه‌ای داشتی، همین‌جا بپرس.', 'thanks wins over the greeting');
   assert.equal(ask('ممنون، شماره تماس بدید').contacts, true, 'asking for a person wins over thanks');
   assert.equal(ask('سلام، آدرس مطب کجاست؟').kind, 'kb', 'the database wins over built-in replies');
 });
@@ -103,22 +103,35 @@ test('the highest score wins; ties keep the earlier entry', () => {
   assert.equal(findAnswer({ entries: [...entries].reverse(), phrases: '', notFound: 'x', text: 'مراقبت' }).entryId, 2);
 });
 
-test('phrases rotate with prefixIndex and are optional', () => {
-  const texts = [0, 1, 2, 3].map(i => ask('ادرس', { prefixIndex: i }).text);
+test('phrases go before every other answer, in turn, and are optional', () => {
+  const texts = [0, 1, 2, 3, 4, 6].map(i => ask('ادرس', { prefixIndex: i }).text);
   assert.deepEqual(texts, [
     'قربونت برم، مطب دکتر در اهواز است.',
+    'مطب دکتر در اهواز است.',
     'الهی بگردم، مطب دکتر در اهواز است.',
+    'مطب دکتر در اهواز است.',
     'عزیز دلم، مطب دکتر در اهواز است.',
     'قربونت برم، مطب دکتر در اهواز است.',
   ]);
-  assert.equal(ask('ادرس', { phrases: '  یک  \n\n دو \n' , prefixIndex: 1 }).text, 'دو مطب دکتر در اهواز است.', 'blank lines are skipped');
+  assert.equal(ask('ادرس', { phrases: '  یک  \n\n دو \n' , prefixIndex: 2 }).text, 'دو مطب دکتر در اهواز است.', 'blank lines are skipped');
   assert.equal(ask('ادرس', { phrases: '' }).text, 'مطب دکتر در اهواز است.');
   assert.equal(ask('ادرس', { phrases: '\n \n' }).text, 'مطب دکتر در اهواز است.');
-  assert.equal(ask('سلام', { prefixIndex: 1 }).text, 'سلام به روی ماهت! بگو ببینم چه سؤالی داری؟', 'built-in replies get no phrase');
+  assert.equal(ask('سلام', { prefixIndex: 1 }).text, 'سلام به روی ماهت 🌸 من خوبم، تو خوبی؟ بگو ببینم چه سؤالی داری.', 'built-in replies get no phrase');
 });
 
 test('Persian and Arabic spellings and digits in the question match the database', () => {
   const entries = [{ id: 3, title: 'ساعت کاری', keywords: 'ساعت كار، 9 صبح', answer: 'از ۹ صبح تا ۵ عصر.' }];
   assert.equal(findAnswer({ entries, phrases: '', notFound: 'x', text: 'ساعت کار مطب' }).entryId, 3, 'ك in the keyword matches ک');
   assert.equal(findAnswer({ entries, phrases: '', notFound: 'x', text: 'از ۹ صبح باز هستید؟' }).entryId, 3, 'Persian digits match Latin ones');
+});
+
+test('small-talk topics answer only when no real topic matches, without a phrase', () => {
+  const entries = [
+    { id: 1, category: 'احوالپرسی', title: 'سلام', keywords: 'سلام، خوبی، وقت بخیر', answer: 'سلام عزیزم!' },
+    { id: 2, category: 'هزینه', title: 'قیمت عمل بینی', keywords: 'قیمت، هزینه', answer: 'حدود ۶۰ میلیون.' },
+  ];
+  const at = text => findAnswer({ entries, phrases: 'قربونت برم،', notFound: 'x', text, prefixIndex: 0 });
+  assert.equal(at('سلام خوبی').text, 'سلام عزیزم!');
+  assert.equal(at('سلام وقت بخیر، قیمت عمل چنده؟').entryId, 2);
+  assert.equal(at('سلام وقت بخیر، قیمت عمل چنده؟').text, 'قربونت برم، حدود ۶۰ میلیون.');
 });

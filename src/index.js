@@ -2,7 +2,8 @@ import { createServer } from 'node:http';
 import fs from 'node:fs';
 import { openDb, backup, setSetting } from './db.js';
 import { createApp } from './app.js';
-import { USERNAME_PATTERN, createUser, pruneSessions, validatePassword } from './auth.js';
+import { USERNAME_PATTERN, createUser, pruneSessions, validatePassword, verifyPassword } from './auth.js';
+import { loginFilePath, saveLogin } from './login-file.js';
 
 const env = process.env;
 const dataDir = env.DATA_DIR || './data';
@@ -25,6 +26,20 @@ if (!db.prepare('SELECT 1 FROM users LIMIT 1').get()) {
   console.log(`Owner account "${username}" created.`);
 }
 
+// data/login-info.txt keeps the current passwords for the server's owner. When it does not exist yet (first
+// start, or an install from before it existed), the owner's password from .env is written to it, but only if
+// it is still the password in use; a password changed earlier in the panel is unknown until it is set again.
+if (!fs.existsSync(loginFilePath(dataDir))) {
+  const owner = db.prepare("SELECT username, password_hash FROM users WHERE role = 'owner' ORDER BY id LIMIT 1").get();
+  if (owner && env.OWNER_PASSWORD && verifyPassword(env.OWNER_PASSWORD, owner.password_hash)) {
+    try {
+      saveLogin(dataDir, { username: owner.username, password: env.OWNER_PASSWORD, role: 'owner' });
+    } catch (err) {
+      console.error('Could not write the login file:', err);
+    }
+  }
+}
+
 // The address shown in the admin panel ("link of the chat page"), e.g. https://chat.enetvip.com.
 const publicUrl = (env.PUBLIC_URL || '').trim().replace(/\/+$/, '');
 if (publicUrl) {
@@ -38,6 +53,7 @@ const app = createApp({
   // 'proxy' behind Caddy, 'cloudflare' behind the Cloudflare tunnel ('true' is the older spelling of it).
   trustProxy: new Map([['proxy', 'proxy'], ['cloudflare', 'cloudflare'], ['true', 'cloudflare']]).get(env.TRUST_PROXY) || false,
   sourceDir: env.SOURCE_DIR || undefined,
+  onPasswordSet: login => saveLogin(dataDir, login),
 });
 
 const server = createServer(app);

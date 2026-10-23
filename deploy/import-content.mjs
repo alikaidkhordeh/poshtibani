@@ -1,5 +1,5 @@
 // Loads the clinic's prepared content (content/clinic.json) into the chat database: knowledge base topics
-// (updated by title, added when new; topics written in the panel are kept), quick replies, contact links
+// (updated by title, added when new, renamed old ones removed; other topics written in the panel are kept), quick replies, contact links
 // and a few settings. Safe to run again. Inside the running container:
 //   docker exec chat-poshtibani node --disable-warning=ExperimentalWarning /app/source/deploy/import-content.mjs
 import { readFileSync } from 'node:fs';
@@ -18,9 +18,11 @@ for (const c of data.contacts || []) {
 }
 
 let added = 0;
+let removed = 0;
 let updated = 0;
 db.exec('BEGIN IMMEDIATE');
 try {
+  for (const title of data.removeTitles || []) removed += Number(db.prepare('DELETE FROM kb WHERE title = ?').run(title).changes);
   for (const e of data.kb || []) {
     const row = db.prepare('SELECT id FROM kb WHERE title = ?').get(e.title);
     if (row) {
@@ -49,4 +51,4 @@ try {
   throw err;
 }
 db.close();
-console.log(`Done: ${added} topics added, ${updated} updated; quick replies, contacts and settings saved.`);
+console.log(`Done: ${added} topics added, ${updated} updated, ${removed} old ones replaced; quick replies, contacts and settings saved.`);

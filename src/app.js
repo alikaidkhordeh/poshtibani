@@ -194,7 +194,16 @@ const cleanKeywords = value => {
   return text;
 };
 
-export function createApp({ db, secureCookies = true, trustProxy = false, loginLimit, sourceDir = PROJECT_DIR, now = () => Date.now() } = {}) {
+// onPasswordSet({ username, password, role }) is told about every password set in the panel (index.js keeps
+// data/login-info.txt with it, so a forgotten password can be looked up on the server).
+export function createApp({ db, secureCookies = true, trustProxy = false, loginLimit, sourceDir = PROJECT_DIR, now = () => Date.now(), onPasswordSet = () => {} } = {}) {
+  const passwordSet = (user, password) => {
+    try {
+      onPasswordSet({ username: user.username, password, role: user.role });
+    } catch (err) {
+      console.error('Could not update the login file:', err);
+    }
+  };
   const staticFiles = loadStatic();
   const defaultAvatar = staticFiles.get('/img/nana.svg');
   const baseHeaders = secureCookies ? { ...SECURITY_HEADERS, 'strict-transport-security': 'max-age=31536000' } : SECURITY_HEADERS;
@@ -251,7 +260,7 @@ export function createApp({ db, secureCookies = true, trustProxy = false, loginL
   const visitorPublic = v => ({ firstName: v.name.split(' ')[0], operated: Boolean(v.operated) });
 
   const answerFor = (text, prefixIndex) => findAnswer({
-    entries: db.prepare('SELECT id, title, keywords, answer FROM kb ORDER BY id').all(),
+    entries: db.prepare('SELECT id, category, title, keywords, answer FROM kb ORDER BY id').all(),
     phrases: setting('phrases'),
     notFound: setting('not_found'),
     text,
@@ -402,6 +411,7 @@ export function createApp({ db, secureCookies = true, trustProxy = false, loginL
     if (problem) throw new HttpError(400, problem);
     db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(hashPassword(body.next), user.id);
     destroyUserSessions(db, user.id, cookies[ADMIN_COOKIE]);
+    passwordSet(user, body.next);
     json(res, 200, { ok: true });
   }, { access: 'staff' });
 
@@ -729,6 +739,7 @@ export function createApp({ db, secureCookies = true, trustProxy = false, loginL
     if (problem) throw new HttpError(400, problem);
     if (db.prepare('SELECT 1 FROM users WHERE username = ?').get(username)) throw new HttpError(409, 'این نام کاربری قبلاً ثبت شده است');
     const id = createUser(db, { username, password: body.password, displayName, role: 'staff', now: t });
+    passwordSet({ username, role: 'staff' }, body.password);
     json(res, 200, { user: userRow(userById(id)) });
   });
 
@@ -748,6 +759,7 @@ export function createApp({ db, secureCookies = true, trustProxy = false, loginL
     if (problem) throw new HttpError(400, problem);
     db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(hashPassword(body.password), target.id);
     destroyUserSessions(db, target.id);
+    passwordSet(target, body.password);
     json(res, 200, { ok: true });
   });
 
